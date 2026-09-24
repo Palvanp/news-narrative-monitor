@@ -1,0 +1,12 @@
+:root {
+  font-family: system-ui, 'Noto Sans Devanagari', sans-serif;
+  color: #1c1f24;
+  background: #f6f7f9;
+}
+body { margin: 0; }
+.app { max-width: 1100px; margin: 0 auto; padding: 16px; }
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+h1 { margin: 0; font-size: 1.5rem; }
+.status { font-size: 0.85rem; color: #555; margin: 0; }
+.ok { color: #1a7f37; }
+.bad { color: #b42318; }

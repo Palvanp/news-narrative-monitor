@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Nazar
+/data/
+node_modules/
+frontend/dist/
+*.db
