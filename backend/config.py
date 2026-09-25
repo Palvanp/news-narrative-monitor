@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     embedding_model: str = "BAAI/bge-m3"
     sentiment_model: str = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
     hindi_ner_model: str = "ai4bharat/IndicNER"
+    # articles less similar than this to the monitor topic are left out of clustering
+    relevance_min: float = 0.0
 
     data_dir: Path = PROJECT_ROOT / "data"
 

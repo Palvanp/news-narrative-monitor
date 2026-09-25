@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from backend.api.routes import router
 from backend.config import get_settings
 from backend.db import engine, init_db
 
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(router)
 
 
 @app.get("/health")

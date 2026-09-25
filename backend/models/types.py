@@ -1,5 +1,7 @@
+from datetime import timezone
+
 import numpy as np
-from sqlalchemy import LargeBinary
+from sqlalchemy import DateTime, LargeBinary
 from sqlalchemy.types import TypeDecorator
 
 
@@ -34,3 +36,22 @@ class Embedding(TypeDecorator):
         if dialect.name == "postgresql":
             return np.asarray(value, dtype=np.float32)
         return np.frombuffer(value, dtype=np.float32).copy()
+
+
+class UTCDateTime(TypeDecorator):
+    """Timezone-aware UTC datetimes on every backend (SQLite drops tzinfo on read)."""
+
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            raise ValueError("naive datetime; use timezone-aware UTC")
+        return value.astimezone(timezone.utc)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value.astimezone(timezone.utc)

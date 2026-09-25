@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from sqlalchemy import (
     JSON,
     Boolean,
-    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -13,7 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from backend.models.types import Embedding
+from backend.models.types import Embedding, UTCDateTime
 
 EMBEDDING_DIM = 1024
 
@@ -34,7 +33,7 @@ class Monitor(Base):
     hindi_keywords: Mapped[str | None] = mapped_column(String(300))
     languages: Mapped[list[str]] = mapped_column(JSON, default=lambda: ["en", "hi"])
     time_range_hours: Mapped[int] = mapped_column(Integer, default=24)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     runs: Mapped[list["MonitoringRun"]] = relationship(back_populates="monitor", cascade="all, delete-orphan")
 
@@ -49,11 +48,11 @@ class MonitoringRun(Base):
     progress: Mapped[float] = mapped_column(Float, default=0.0)
     message: Mapped[str | None] = mapped_column(Text)
     error: Mapped[str | None] = mapped_column(Text)
-    window_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    window_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    window_start: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    window_end: Mapped[datetime | None] = mapped_column(UTCDateTime)
     stats: Mapped[dict] = mapped_column(JSON, default=dict)
-    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
     monitor: Mapped[Monitor] = relationship(back_populates="runs")
 
@@ -80,10 +79,11 @@ class Article(Base):
     body_status: Mapped[str] = mapped_column(String(20), default="pending")  # pending|ok|failed|skipped
     language: Mapped[str | None] = mapped_column(String(8))
     gdelt_language: Mapped[str | None] = mapped_column(String(40))
-    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    published_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
+    fetched_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     duplicate_of: Mapped[int | None] = mapped_column(ForeignKey("articles.id"))
     dedup_reason: Mapped[str | None] = mapped_column(String(20))  # url|headline|near_dup
+    relevance: Mapped[float | None] = mapped_column(Float)  # cosine similarity to the monitor topic
 
     source: Mapped[Source | None] = relationship()
     embedding: Mapped["ArticleEmbedding | None"] = relationship(back_populates="article", cascade="all, delete-orphan")
@@ -147,7 +147,7 @@ class Narrative(Base):
     keywords: Mapped[list[str]] = mapped_column(JSON, default=list)
     centroid: Mapped[object | None] = mapped_column(Embedding(EMBEDDING_DIM))
     stats: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
     articles: Mapped[list["ArticleNarrative"]] = relationship(back_populates="narrative", cascade="all, delete-orphan")
 
@@ -171,9 +171,11 @@ class Brief(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     run_id: Mapped[int] = mapped_column(ForeignKey("monitoring_runs.id", ondelete="CASCADE"), index=True)
     model: Mapped[str] = mapped_column(String(100))
-    content: Mapped[dict] = mapped_column(JSON)
-    markdown: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending|running|completed|failed
+    error: Mapped[str | None] = mapped_column(Text)
+    content: Mapped[dict | None] = mapped_column(JSON)
+    markdown: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 
 class LLMCache(Base):
@@ -182,4 +184,4 @@ class LLMCache(Base):
     prompt_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     model: Mapped[str] = mapped_column(String(100))
     response: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

@@ -1,0 +1,116 @@
+# Canonical entities with English and Hindi surface forms.
+#
+# Two jobs:
+#  1. Canonicalize NER output across languages (अमेरिका, US, America -> United States).
+#  2. Find entity types NER models miss: political parties, government bodies and
+#     policy terms are matched directly in the text.
+#
+# Types: PERSON ORG PARTY GOV COUNTRY LOC EVENT POLICY
+# `match: true` means the aliases are searched for in text even when NER doesn't tag them.
+# Extend this per monitored event.
+
+India:
+  type: COUNTRY
+  aliases: [India, Indian, Bharat, भारत, भारतीय, हिंदुस्तान, हिन्दुस्तान]
+United States:
+  type: COUNTRY
+  aliases: [United States, US, U.S., USA, U.S.A., America, American, Washington, अमेरिका, अमरीका, अमेरिकी, अमरीकी, यूएस, संयुक्त राज्य अमेरिका, वॉशिंगटन, वाशिंगटन]
+China:
+  type: COUNTRY
+  aliases: [China, Chinese, Beijing, चीन, चीनी, बीजिंग]
+European Union:
+  type: ORG
+  aliases: [European Union, EU, यूरोपीय संघ, ईयू]
+Russia:
+  type: COUNTRY
+  aliases: [Russia, Russian, Moscow, रूस, रूसी]
+
+Narendra Modi:
+  type: PERSON
+  aliases: [Narendra Modi, Modi, PM Modi, Prime Minister Modi, नरेंद्र मोदी, मोदी, पीएम मोदी, प्रधानमंत्री मोदी]
+Donald Trump:
+  type: PERSON
+  aliases: [Donald Trump, Trump, President Trump, डोनाल्ड ट्रंप, ट्रंप, ट्रम्प, राष्ट्रपति ट्रंप]
+Piyush Goyal:
+  type: PERSON
+  aliases: [Piyush Goyal, Goyal, पीयूष गोयल, गोयल]
+S. Jaishankar:
+  type: PERSON
+  aliases: [S. Jaishankar, S Jaishankar, Jaishankar, एस. जयशंकर, जयशंकर]
+Nirmala Sitharaman:
+  type: PERSON
+  aliases: [Nirmala Sitharaman, Sitharaman, निर्मला सीतारमण, सीतारमण]
+Rahul Gandhi:
+  type: PERSON
+  aliases: [Rahul Gandhi, राहुल गांधी]
+
+Bharatiya Janata Party:
+  type: PARTY
+  match: true
+  aliases: [BJP, Bharatiya Janata Party, भाजपा, बीजेपी, भारतीय जनता पार्टी]
+Indian National Congress:
+  type: PARTY
+  match: true
+  aliases: [Indian National Congress, Congress party, कांग्रेस]
+
+Ministry of Commerce and Industry:
+  type: GOV
+  match: true
+  aliases: [Ministry of Commerce, Commerce Ministry, Ministry of Commerce and Industry, वाणिज्य मंत्रालय, वाणिज्य एवं उद्योग मंत्रालय]
+Office of the US Trade Representative:
+  type: GOV
+  match: true
+  aliases: [USTR, US Trade Representative, U.S. Trade Representative, Office of the US Trade Representative, अमेरिकी व्यापार प्रतिनिधि]
+Reserve Bank of India:
+  type: GOV
+  match: true
+  aliases: [RBI, Reserve Bank of India, Reserve Bank, भारतीय रिज़र्व बैंक, भारतीय रिजर्व बैंक, आरबीआई]
+World Trade Organization:
+  type: ORG
+  match: true
+  aliases: [WTO, World Trade Organization, World Trade Organisation, विश्व व्यापार संगठन, डब्ल्यूटीओ]
+
+Tariffs:
+  type: POLICY
+  match: true
+  aliases: [tariff, tariffs, reciprocal tariff, reciprocal tariffs, टैरिफ, शुल्क, आयात शुल्क, जवाबी शुल्क]
+Trade deal:
+  type: POLICY
+  match: true
+  aliases: [trade deal, trade agreement, bilateral trade agreement, BTA, free trade agreement, FTA, व्यापार समझौता, व्यापार सौदा, मुक्त व्यापार समझौता, ट्रेड डील]
+Exports:
+  type: POLICY
+  match: true
+  aliases: [export, exports, exporters, निर्यात, निर्यातक]
+Imports:
+  type: POLICY
+  match: true
+  aliases: [import, imports, importers, आयात]
+Trade deficit:
+  type: POLICY
+  match: true
+  aliases: [trade deficit, trade surplus, व्यापार घाटा]
+Sanctions:
+  type: POLICY
+  match: true
+  aliases: [sanction, sanctions, प्रतिबंध]
+Russian oil:
+  type: POLICY
+  match: true
+  aliases: [Russian oil, रूसी तेल]
+H-1B visas:
+  type: POLICY
+  match: true
+  aliases: [H-1B, H1B, H-1B visa, एच-1बी]
+Agriculture:
+  type: POLICY
+  match: true
+  aliases: [agriculture, agricultural, dairy, farmers, कृषि, डेयरी, किसान]
+Manufacturing:
+  type: POLICY
+  match: true
+  aliases: [manufacturing, Make in India, विनिर्माण, मैन्युफैक्चरिंग, मेक इन इंडिया]
+GST:
+  type: POLICY
+  match: true
+  aliases: [GST, Goods and Services Tax, जीएसटी, वस्तु एवं सेवा कर]

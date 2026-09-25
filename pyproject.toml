@@ -12,6 +12,15 @@ dependencies = [
     "pydantic-settings>=2.3",
     "httpx>=0.27",
     "numpy>=1.26",
+    "trafilatura>=2.2.0",
+    "selectolax>=0.4.12",
+    "lingua-language-detector>=2.1.1",
+    "torch>=2.14.0",
+    "sentence-transformers>=6.1.0",
+    "transformers>=5.17.0",
+    "scikit-learn>=1.9.1",
+    "umap-learn>=0.5.12",
+    "spacy>=3.8.16",
 ]
 
 [project.optional-dependencies]
@@ -22,6 +31,17 @@ dev = ["pytest>=8"]
 
 [tool.uv]
 package = false
+# C: is full on the dev machine; keep caches on the project drive.
+cache-dir = ".cache/uv"
+link-mode = "copy"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
