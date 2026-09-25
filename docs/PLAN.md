@@ -1,5 +1,7 @@
 # Nazar: Build Plan
 
+> **Changes since this plan was written** (details in [JOURNAL.md](JOURNAL.md)): news comes from publisher RSS feeds (GDELT's API rate-limits us; kept behind `NEWS_SOURCES`); SQLite is the default database; Hindi NER uses the open HiNER (MuRIL) model because IndicNER is gated; clustering removes per-language offsets and requires a minimum cohesion; runs with too little coherent coverage end with an explicit "not enough coverage" outcome.
+
 ## Context
 `../Nazar_Project_Description.md` describes **Nazar**, a prototype that monitors a fast-moving political event in English and Hindi news, groups the coverage into narratives, tracks how each narrative grows and how its sentiment and entities change, and writes an evidence-backed brief for an analyst. The repo (`news-narrative-monitor/`) is empty right now: it has only a LICENSE, a Python .gitignore and a one-line README. This plan builds the full V1 (spec §17) plus the evaluation harness (§15).
 

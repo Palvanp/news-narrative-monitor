@@ -11,7 +11,9 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///data/nazar.db"
 
-    ollama_url: str = "http://localhost:11434"
+    # 127.0.0.1 rather than "localhost": on Windows "localhost" tries IPv6 first,
+    # which adds seconds when nothing is listening.
+    ollama_url: str = "http://127.0.0.1:11434"
     llm_naming_model: str = "qwen2.5:3b-instruct"
     llm_brief_model: str = "qwen2.5:7b-instruct"
     llm_timeout_seconds: float = 600.0
@@ -23,11 +25,17 @@ class Settings(BaseSettings):
     # so the tokenizer comes from the base model it was fine-tuned from.
     hindi_ner_model: str = "cfilt/HiNER-collapsed-muril-base-cased"
     hindi_ner_tokenizer: str = "google/muril-base-cased"
+    # Keep the NLP models loaded between runs (faster repeat runs; holds ~2.5 GB of
+    # GPU memory and some RAM while the server runs). False frees them after each run.
+    keep_models_loaded: bool = True
+
     # comma-separated: rss, gdelt. GDELT's API rate-limits heavily, so it is off by default.
     news_sources: str = "rss"
 
     # articles less similar than this to the monitor topic are left out of clustering
-    relevance_min: float = 0.0
+    # Floor, not the main filter: bge-m3 similarity between an article and a short
+    # topic phrase is blunt (see docs/JOURNAL.md). Narrative cohesion does most of the work.
+    relevance_min: float = 0.33
 
     data_dir: Path = PROJECT_ROOT / "data"
 

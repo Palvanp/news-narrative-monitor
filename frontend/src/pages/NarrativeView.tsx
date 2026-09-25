@@ -52,7 +52,12 @@ export default function NarrativeView() {
           <div>
             <div className="eyebrow">Narrative investigation</div>
             <h1>{n.label}</h1>
-            {n.label_source === 'keywords' && <div className="muted small">Keyword label (LLM was unavailable)</div>}
+            {n.label_source !== 'llm' && (
+              <div className="muted small">
+                Provisional title: the most representative headline. The LLM writes a narrative statement when it is
+                connected.
+              </div>
+            )}
           </div>
         </div>
         {n.summary && <p className="secondary">{n.summary}</p>}

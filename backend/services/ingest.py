@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from backend.config import get_settings
 from backend.models import Article, Monitor, MonitoringRun, Source
-from backend.services.progress import Reporter
+from backend.services.progress import InsufficientCoverage, Reporter
 from pipeline.cleaning.dedup import dedup_urls, headline_duplicates
 from pipeline.cleaning.text import clean_body, clean_text, is_malformed
 from pipeline.cleaning.urls import normalize_url
@@ -60,7 +60,7 @@ def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
     raw, source_stats = collect_sources(monitor, run, settings.enabled_sources, report)
     stats["collected"] = len(raw)
     if not raw:
-        raise RuntimeError("No matching coverage found in the news feeds for this topic and time window")
+        raise InsufficientCoverage("No headlines in the news feeds matched this topic in the selected time window")
     articles, stats["url_duplicates"] = dedup_urls(raw)
 
     report("fetch_bodies", 0.3, f"Fetching {len(articles)} article pages")

@@ -37,12 +37,6 @@ def build_prompt(topic: str, headlines: list[Headline], keywords: list[str], ent
     )
 
 
-def keyword_label(keywords: list[str], entities: list[str]) -> str:
-    """Fallback when the LLM is unavailable: top keywords, else top entities."""
-    terms = keywords[:3] or entities[:3]
-    return " / ".join(t.title() if t.isascii() else t for t in terms) or "Unlabelled narrative"
-
-
 def name_narrative(client: OllamaClient, model: str, topic: str, headlines: list[Headline], keywords: list[str], entities: list[str], first_seen: str, last_seen: str) -> NarrativeName:
     prompt = build_prompt(topic, headlines, keywords, entities, first_seen, last_seen)
     return client.generate(model, SYSTEM, prompt, NarrativeName, num_predict=200)

@@ -175,6 +175,10 @@ class EntityExtractor:
             device=0 if self.device == "cuda" else -1,
         )
 
+    def warm_up(self) -> None:
+        """Load both NER models now rather than on first use."""
+        _ = self._spacy, self._indic
+
     def extract_many(self, items: list[tuple[str, str | None, str]]) -> list[Counter]:
         """items: (title, body, language). Returns a Counter of Mentions per item."""
         results: list[Counter] = [Counter() for _ in items]

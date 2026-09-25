@@ -13,6 +13,9 @@ _settings = get_settings()
 os.environ.setdefault("HF_HOME", str(_settings.data_dir / "models" / "huggingface"))
 os.environ.setdefault("TORCH_HOME", str(_settings.data_dir / "models" / "torch"))
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+# UMAP compiles its numeric code with numba on first use (~10 s); caching the
+# compiled code on disk makes later processes skip that.
+os.environ.setdefault("NUMBA_CACHE_DIR", str(_settings.data_dir / "cache" / "numba"))
 
 
 def resolve_device() -> str:

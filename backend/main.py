@@ -8,6 +8,9 @@ from sqlalchemy import text
 from backend.api.routes import router
 from backend.config import get_settings
 from backend.db import engine, init_db
+from backend.logging_setup import setup_logging
+
+setup_logging()
 
 
 @asynccontextmanager
@@ -39,7 +42,7 @@ async def health() -> dict:
 
     try:
         async with httpx.AsyncClient(timeout=3) as client:
-            resp = await client.get(f"{settings.ollama_url}/api/tags")
+            resp = await client.get(f"{settings.ollama_url}/api/tags", timeout=httpx.Timeout(3.0, connect=0.5))
             resp.raise_for_status()
             models = [m["name"] for m in resp.json().get("models", [])]
         llm = {"ok": True, "url": settings.ollama_url, "models": models}

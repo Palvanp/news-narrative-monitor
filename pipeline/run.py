@@ -5,10 +5,10 @@
 
 import argparse
 import json
-import logging
 import sys
 
 from backend.db import SessionLocal, init_db
+from backend.logging_setup import setup_logging
 from backend.models import Monitor, MonitoringRun
 from backend.services.runner import create_run, execute_run
 
@@ -21,9 +21,7 @@ def main() -> int:
     parser.add_argument("--hindi-keywords", default=None)
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    for noisy in ("httpx", "trafilatura", "htmldate"):
-        logging.getLogger(noisy).setLevel(logging.WARNING)
+    setup_logging()
     init_db()
 
     with SessionLocal() as session:

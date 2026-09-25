@@ -7,6 +7,11 @@ from backend.models import MonitoringRun
 log = logging.getLogger(__name__)
 
 
+class InsufficientCoverage(Exception):
+    """Not enough relevant, coherent coverage to report narratives. A run that
+    stops here completes normally with this explanation instead of failing."""
+
+
 class Reporter:
     """Writes stage/progress to the run row so the UI can poll it.
 

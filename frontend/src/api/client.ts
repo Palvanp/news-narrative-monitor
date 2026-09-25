@@ -39,6 +39,11 @@ export type RunStats = {
   narratives?: number
   unclustered?: number
   llm?: string
+  outcome?: 'narratives' | 'insufficient_coverage'
+  relevant?: number
+  below_relevance?: number
+  sources?: { rss?: { feeds_ok?: number; headlines?: number; in_window?: number; matched?: number } }
+  timings_s?: Record<string, number>
   [key: string]: unknown
 }
 
@@ -73,7 +78,7 @@ export type NarrativeCard = {
   id: number
   run_id: number
   label: string
-  label_source: 'llm' | 'keywords'
+  label_source: 'llm' | 'headline' | 'keywords'
   summary: string | null
   keywords: string[]
   volume: number

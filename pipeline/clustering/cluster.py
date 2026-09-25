@@ -86,3 +86,31 @@ def cluster_embeddings(
     reduced = reducer.fit_transform(vectors)
     labels = HDBSCAN(min_cluster_size=mcs, cluster_selection_method="leaf", copy=True).fit_predict(reduced)
     return attach_unclustered(vectors, labels), reduced
+
+
+# A narrative is a storyline several articles share, so its articles must be
+# close to one another, not just the nearest leftovers. Calibrated on the first
+# two real runs: real narratives had mean pairwise similarity >= 0.57 (raw
+# bge-m3 vectors), a bag of unrelated articles 0.45. Provisional until the
+# evaluation set is labelled.
+MIN_NARRATIVE_ARTICLES = 3
+MIN_COHESION = 0.52
+
+
+def cohesion(vectors: np.ndarray) -> float:
+    """Mean pairwise cosine similarity of L2-normalized vectors."""
+    k = len(vectors)
+    if k < 2:
+        return 1.0
+    sims = vectors @ vectors.T
+    return float((sims.sum() - k) / (k * (k - 1)))
+
+
+def drop_incoherent(raw_vectors: np.ndarray, labels: np.ndarray) -> np.ndarray:
+    """Unlabel clusters that are too small or too loose to be one storyline."""
+    labels = labels.copy()
+    for c in set(labels.tolist()) - {-1}:
+        mask = labels == c
+        if mask.sum() < MIN_NARRATIVE_ARTICLES or cohesion(raw_vectors[mask]) < MIN_COHESION:
+            labels[mask] = -1
+    return labels

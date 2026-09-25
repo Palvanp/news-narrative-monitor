@@ -69,7 +69,9 @@ export default function Dashboard() {
 
       {run && !completed && <RunProgress run={run} />}
 
-      {completed && (
+      {completed && stats.outcome === 'insufficient_coverage' && <InsufficientCoverage run={run!} />}
+
+      {completed && stats.outcome !== 'insufficient_coverage' && (
         <>
           <div className="tiles">
             <div className="tile">
@@ -96,8 +98,8 @@ export default function Dashboard() {
 
           {stats.llm === 'unavailable' && (
             <p className="small secondary">
-              Narrative names below are keyword-based: the LLM server was unreachable during this run. Start the SSH
-              tunnel and run again for written labels.
+              Narrative titles below are each narrative's most representative headline: the LLM server was unreachable
+              during this run. Start the SSH tunnel and run again for written narrative statements.
             </p>
           )}
 
@@ -137,6 +139,41 @@ export default function Dashboard() {
           {narratives.data?.length === 0 && <p className="muted">No narratives found in this window.</p>}
         </>
       )}
+    </div>
+  )
+}
+
+/** Where the articles went, for a run that found no narratives. */
+function InsufficientCoverage({ run }: { run: Run }) {
+  const s = run.stats
+  const rss = s.sources?.rss ?? {}
+  const steps: [string, number | undefined][] = [
+    ['headlines read from the news feeds', rss.headlines],
+    ['published in the selected time window', rss.in_window],
+    ['matched the topic keywords', s.collected as number | undefined],
+    ['unique articles after removing duplicates', s.enriched as number | undefined],
+    ['relevant enough to the topic', s.relevant],
+  ]
+  return (
+    <div className="panel stack">
+      <h2>Not enough coverage to identify narratives</h2>
+      <p className="secondary">{run.message}</p>
+      <table className="data">
+        <tbody>
+          {steps
+            .filter(([, v]) => v != null)
+            .map(([label, v]) => (
+              <tr key={label}>
+                <td>{label}</td>
+                <td className="num">{v}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+      <p className="muted small">
+        Try a topic that is currently in the news, a longer time window, or both languages. The feeds only hold each
+        outlet's most recent stories (roughly the last 1 to 3 days).
+      </p>
     </div>
   )
 }

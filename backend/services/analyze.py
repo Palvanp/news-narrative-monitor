@@ -9,12 +9,18 @@ from sqlalchemy.orm import Session, selectinload
 
 from backend.config import get_settings
 from backend.models import Article, ArticleEntity, ArticleNarrative, Monitor, MonitoringRun, Narrative
-from backend.services.progress import Reporter
-from pipeline.clustering.cluster import centroid, cluster_embeddings, remove_language_offsets
+from backend.services.progress import InsufficientCoverage, Reporter
+from pipeline.clustering.cluster import (
+    MIN_NARRATIVE_ARTICLES,
+    centroid,
+    cluster_embeddings,
+    cohesion,
+    drop_incoherent,
+    remove_language_offsets,
+)
 from pipeline.clustering.keywords import ctfidf_keywords
-from pipeline.embeddings.encoder import shared_encoder
+from pipeline import models
 from pipeline.evidence.select import best_sentence, representatives, split_sentences
-from pipeline.narratives.naming import keyword_label
 from pipeline.temporal.stats import Item, narrative_stats
 
 REPRESENTATIVES_PER_NARRATIVE = 8
@@ -58,8 +64,11 @@ def analyze(session: Session, run: MonitoringRun, monitor: Monitor, report: Repo
 
     articles = [a for a in active_articles(session, run.id) if a.embedding is not None]
     relevant = [a for a in articles if a.relevance is None or a.relevance >= settings.relevance_min]
-    if len(relevant) < 3:
-        raise RuntimeError(f"Only {len(relevant)} relevant articles; too few to find narratives")
+    run.stats = {**(run.stats or {}), "relevant": len(relevant), "below_relevance": len(articles) - len(relevant)}
+    if len(relevant) < MIN_NARRATIVE_ARTICLES:
+        raise InsufficientCoverage(
+            f"Only {len(relevant)} of {len(articles)} matching articles were relevant enough to the topic"
+        )
 
     report("cluster", 0.0, f"Clustering {len(relevant)} articles")
     raw = np.stack([a.embedding.vector for a in relevant])
@@ -67,13 +76,20 @@ def analyze(session: Session, run: MonitoringRun, monitor: Monitor, report: Repo
     # English and Hindi reports of one story group together (see cluster.py)
     vectors = remove_language_offsets(raw, [a.language for a in relevant])
     labels, _ = cluster_embeddings(vectors)
+    labels = drop_incoherent(raw, labels)
     texts = [f"{a.title} {(a.body or '')[:1000]}" for a in relevant]
     keywords = ctfidf_keywords(texts, labels.tolist())
 
     clusters = sorted({int(lbl) for lbl in labels if lbl >= 0}, key=lambda c: -int((labels == c).sum()))
+    run.stats = {**run.stats, "unclustered": int((labels < 0).sum()), "narratives": len(clusters)}
+    if not clusters:
+        raise InsufficientCoverage(
+            f"{len(relevant)} relevant articles were found, but they don't share a common storyline "
+            "(no group of related articles was tight enough to be a narrative)"
+        )
     report("evidence", 0.3, f"Found {len(clusters)} narratives; selecting evidence")
 
-    encoder = shared_encoder(settings.embedding_model)
+    encoder = models.encoder()
     for n, c in enumerate(clusters):
         idx = np.flatnonzero(labels == c)
         members = [relevant[i] for i in idx]
@@ -99,6 +115,7 @@ def analyze(session: Session, run: MonitoringRun, monitor: Monitor, report: Repo
         )
         stats["top_entities"] = top_entities(members)
         stats["mean_similarity"] = round(float(sims.mean()), 3)
+        stats["cohesion"] = round(cohesion(raw[idx]), 3)
 
         reps = set(
             representatives(
@@ -118,8 +135,9 @@ def analyze(session: Session, run: MonitoringRun, monitor: Monitor, report: Repo
         narrative = Narrative(
             run_id=run.id,
             cluster_label=c,
-            label=keyword_label(kw, [e["name"] for e in stats["top_entities"]]),
-            label_source="keywords",
+            # until the LLM names it: the headline closest to the narrative's centre
+            label=members[int(np.argmax(sims))].title[:160],
+            label_source="headline",
             keywords=kw,
             centroid=center,
             stats=stats,
@@ -136,10 +154,4 @@ def analyze(session: Session, run: MonitoringRun, monitor: Monitor, report: Repo
         session.add(narrative)
         report("evidence", 0.3 + 0.7 * (n + 1) / len(clusters), f"Narrative {n + 1}/{len(clusters)}")
 
-    run.stats = {
-        **(run.stats or {}),
-        "relevant": len(relevant),
-        "narratives": len(clusters),
-        "unclustered": int((labels < 0).sum()),
-    }
     session.commit()

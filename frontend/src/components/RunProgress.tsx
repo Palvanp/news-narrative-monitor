@@ -35,8 +35,8 @@ export default function RunProgress({ run }: { run: Run }) {
       </div>
       {run.message && <p className="muted small">{run.message}</p>}
       <p className="muted small">
-        Runs take several minutes: GDELT is rate-limited, article pages are fetched one by one, and naming runs on a
-        CPU server.
+        A run usually takes under a minute. The first run after the server starts also loads the language models,
+        and naming narratives waits on the LLM server when it is connected.
       </p>
     </div>
   )

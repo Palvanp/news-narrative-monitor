@@ -2,7 +2,7 @@
 
 Nazar monitors a fast-moving political event across English and Hindi news, groups the coverage into narratives, tracks how they grow and shift, and produces an evidence-backed intelligence brief.
 
-> Status: in development. See [docs/PLAN.md](docs/PLAN.md) for the build plan and milestones.
+> Status: in development. See [docs/PLAN.md](docs/PLAN.md) for the build plan and [docs/JOURNAL.md](docs/JOURNAL.md) for what we learned along the way.
 
 ## Setup
 
@@ -18,13 +18,30 @@ cd frontend && npm install && npm run dev # UI on http://localhost:5173
 The database defaults to SQLite (`data/nazar.db`, created automatically). To use Postgres + pgvector instead, point `DATABASE_URL` at it. That can be a local `docker compose up -d db`, or a hosted Postgres with pgvector such as Neon or Supabase. Then run `uv sync --extra postgres`.
 
 ### LLM (Ollama on a remote server)
-Narrative naming and brief generation use [Ollama](https://ollama.com) on a remote VM (an Oracle Cloud Always Free instance), reached through an SSH tunnel:
+Narrative naming and brief generation use [Ollama](https://ollama.com) on a free Oracle Cloud VM, reached through an SSH tunnel. The step-by-step setup is in [docs/ORACLE_SETUP.md](docs/ORACLE_SETUP.md). Once it's set up:
 
 ```bash
-ssh -i key.pem -N -L 11434:localhost:11434 ubuntu@<vm-ip>
+ssh -i ~/.ssh/nazar_oracle -N -L 11434:127.0.0.1:11434 ubuntu@<vm-ip>
 ```
 
 `GET /health` (and the status line in the UI) shows whether the database and the LLM are reachable.
+
+### Logs
+Each run logs its stages, timings and a summary of where the articles went, both in the terminal running the API and in `data/logs/nazar.log`:
+
+```powershell
+Get-Content data\logs\nazar.log -Wait     # PowerShell
+tail -f data/logs/nazar.log                 # bash
+```
+
+A run can also be started from the command line, without the UI:
+
+```bash
+uv run python -m pipeline.run --topic "Election Commission CEC Gyanesh Kumar SIR controversy" --hours 72
+```
+
+### Speed
+The API server keeps the NLP models loaded between runs (`KEEP_MODELS_LOADED=true`, about 2.5 GB of GPU memory). The first run after starting the server loads them; later runs reuse them. Set it to `false` to free that memory after every run.
 
 ## Tests
 

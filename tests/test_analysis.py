@@ -101,3 +101,18 @@ def test_evidence_drops_headline_prefix_and_page_furniture():
     assert split_sentences("With inputs from PTI Quick Answers Rahul Gandhi criticised the commission over the report.") == [
         "Rahul Gandhi criticised the commission over the report."
     ]
+
+
+def test_drop_incoherent_unlabels_loose_or_tiny_groups():
+    from pipeline.clustering.cluster import cohesion, drop_incoherent
+
+    rng = np.random.default_rng(0)
+    base = rng.normal(size=16)
+    tight = np.stack([base + rng.normal(scale=0.2, size=16) for _ in range(5)])
+    loose = rng.normal(size=(5, 16))
+    pair = np.stack([base, base])
+    vecs = np.concatenate([tight, loose, pair])
+    vecs /= np.linalg.norm(vecs, axis=1, keepdims=True)
+    labels = np.array([0] * 5 + [1] * 5 + [2] * 2)
+    assert cohesion(vecs[:5]) > 0.9 and cohesion(vecs[5:10]) < 0.3
+    assert drop_incoherent(vecs, labels).tolist() == [0] * 5 + [-1] * 7

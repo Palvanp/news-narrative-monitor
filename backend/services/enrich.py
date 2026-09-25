@@ -1,8 +1,11 @@
 """Stage 2: embeddings, near-duplicate dedup, topic relevance, sentiment, entities.
 
-The sentiment and NER models are loaded one at a time and released after use.
-The embedding model stays loaded for the analysis stage (all three fit in 6 GB).
+Models come from pipeline.models, which loads each once and (with
+KEEP_MODELS_LOADED) keeps them for later runs. All three fit in 6 GB of GPU memory.
 """
+
+import logging
+import time
 
 from collections import Counter, defaultdict
 
@@ -13,9 +16,12 @@ from backend.config import get_settings
 from backend.models import Article, ArticleEmbedding, ArticleEntity, Entity, Monitor, MonitoringRun, SentimentScore
 from backend.services.progress import Reporter
 from pipeline.cleaning.dedup import near_duplicates
-from pipeline.embeddings.encoder import article_text, shared_encoder
-from pipeline.entities.extractor import EntityExtractor, Mention
-from pipeline.sentiment.classifier import SentimentClassifier, sentiment_text
+from pipeline import models
+from pipeline.embeddings.encoder import article_text
+from pipeline.entities.extractor import Mention
+from pipeline.sentiment.classifier import sentiment_text
+
+log = logging.getLogger(__name__)
 
 
 def topic_text(monitor: Monitor) -> str:
@@ -35,10 +41,11 @@ def enrich(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
         raise RuntimeError("No articles were collected for this monitor; try a broader topic or longer time range")
 
     report("embed", 0.0, f"Embedding {len(articles)} articles")
-    # kept loaded for the analysis stage; the runner releases it at the end of the run
-    encoder = shared_encoder(settings.embedding_model)
+    encoder = models.encoder()
+    started = time.perf_counter()
     vectors = encoder.encode([article_text(a.title, a.body) for a in articles])
     topic_vector = encoder.encode([topic_text(monitor)])[0]
+    log.info("[run %s] embedded %d articles in %.1fs", run.id, len(articles), time.perf_counter() - started)
 
     near = near_duplicates(vectors, [a.language for a in articles])
     active: list[Article] = []
@@ -53,11 +60,10 @@ def enrich(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
     session.commit()
 
     report("sentiment", 0.35, f"Classifying sentiment for {len(active)} articles")
-    classifier = SentimentClassifier(settings.sentiment_model)
-    try:
-        predictions = classifier.predict([sentiment_text(a.title, a.body) for a in active])
-    finally:
-        classifier.close()
+    classifier = models.sentiment()
+    started = time.perf_counter()
+    predictions = classifier.predict([sentiment_text(a.title, a.body) for a in active])
+    log.info("[run %s] sentiment for %d articles in %.1fs", run.id, len(active), time.perf_counter() - started)
     for article, pred in zip(active, predictions):
         article.sentiment = SentimentScore(
             model=settings.sentiment_model,
@@ -69,11 +75,10 @@ def enrich(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
     session.commit()
 
     report("entities", 0.6, f"Extracting entities from {len(active)} articles")
-    extractor = EntityExtractor(settings.hindi_ner_model, settings.hindi_ner_tokenizer)
-    try:
-        mentions = extractor.extract_many([(a.title, a.body, a.language) for a in active])
-    finally:
-        extractor.close()
+    extractor = models.entities()
+    started = time.perf_counter()
+    mentions = extractor.extract_many([(a.title, a.body, a.language) for a in active])
+    log.info("[run %s] entities for %d articles in %.1fs", run.id, len(active), time.perf_counter() - started)
     store_entities(session, active, mentions)
 
     run.stats = {

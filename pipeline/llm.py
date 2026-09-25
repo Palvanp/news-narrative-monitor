@@ -39,8 +39,10 @@ class OllamaClient:
         self.cache = cache
 
     def available(self) -> bool:
+        # A short connect timeout: the tunnel answers instantly when it is up, while
+        # Windows retries a refused local port for ~2 s before reporting failure.
         try:
-            resp = httpx.get(f"{self.base_url}/api/tags", timeout=5)
+            resp = httpx.get(f"{self.base_url}/api/tags", timeout=httpx.Timeout(5.0, connect=0.5))
             return resp.status_code == 200
         except httpx.HTTPError:
             return False
