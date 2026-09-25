@@ -15,6 +15,7 @@ from backend.services.ingest import ingest
 from backend.services.naming import name_narratives
 from backend.services.progress import Reporter
 from backend.services.runs import create_run  # noqa: F401  (re-exported for the CLI)
+from pipeline.embeddings.encoder import release_shared_encoders
 
 log = logging.getLogger(__name__)
 
@@ -48,5 +49,6 @@ def execute_run(run_id: int, session_factory: sessionmaker = SessionLocal) -> No
             run.error = "".join(traceback.format_exception_only(exc)).strip()
             run.message = traceback.format_exc()[-2000:]
         finally:
+            release_shared_encoders()
             run.finished_at = datetime.now(timezone.utc)
             session.commit()

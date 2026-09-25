@@ -1,0 +1,36 @@
+# Publisher RSS feeds. Each was checked on 2026-09-25 to return dated items.
+# The outlet list shapes which narratives can appear: document changes to it.
+
+en:
+  - {outlet: The Hindu, section: national, url: "https://www.thehindu.com/news/national/feeder/default.rss"}
+  - {outlet: The Hindu, section: economy, url: "https://www.thehindu.com/business/Economy/feeder/default.rss"}
+  - {outlet: Indian Express, section: india, url: "https://indianexpress.com/section/india/feed/"}
+  - {outlet: Indian Express, section: business, url: "https://indianexpress.com/section/business/feed/"}
+  - {outlet: Mint, section: news, url: "https://www.livemint.com/rss/news"}
+  - {outlet: Mint, section: economy, url: "https://www.livemint.com/rss/economy"}
+  - {outlet: Mint, section: politics, url: "https://www.livemint.com/rss/politics"}
+  - {outlet: Times of India, section: india, url: "https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms"}
+  - {outlet: Times of India, section: business, url: "https://timesofindia.indiatimes.com/rssfeeds/1898055.cms"}
+  - {outlet: NDTV, section: india, url: "https://feeds.feedburner.com/ndtvnews-india-news"}
+  - {outlet: NDTV Profit, section: business, url: "https://feeds.feedburner.com/ndtvprofit-latest"}
+  - {outlet: Hindustan Times, section: india, url: "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml"}
+  - {outlet: Hindustan Times, section: business, url: "https://www.hindustantimes.com/feeds/rss/business/rssfeed.xml"}
+  - {outlet: Economic Times, section: economy, url: "https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms"}
+  - {outlet: Economic Times, section: politics, url: "https://economictimes.indiatimes.com/news/politics-and-nation/rssfeeds/1052732854.cms"}
+  - {outlet: Business Standard, section: economy, url: "https://www.business-standard.com/rss/economy-102.rss"}
+  - {outlet: Business Standard, section: india, url: "https://www.business-standard.com/rss/india-news-216.rss"}
+  - {outlet: News18, section: india, url: "https://www.news18.com/rss/india.xml"}
+  - {outlet: India Today, section: india, url: "https://www.indiatoday.in/rss/1206578"}
+
+hi:
+  - {outlet: BBC Hindi, section: home, url: "https://feeds.bbci.co.uk/hindi/rss.xml"}
+  - {outlet: Amar Ujala, section: india, url: "https://www.amarujala.com/rss/india-news.xml"}
+  - {outlet: Amar Ujala, section: business, url: "https://www.amarujala.com/rss/business.xml"}
+  - {outlet: Live Hindustan, section: national, url: "https://api.livehindustan.com/feeds/rss/national/rssfeed.xml"}
+  - {outlet: Live Hindustan, section: business, url: "https://api.livehindustan.com/feeds/rss/business/rssfeed.xml"}
+  - {outlet: NDTV India, section: latest, url: "https://feeds.feedburner.com/ndtvkhabar-latest"}
+  - {outlet: Aaj Tak, section: home, url: "https://www.aajtak.in/rssfeeds/?id=home"}
+  - {outlet: ABP Live, section: home, url: "https://www.abplive.com/home/feed"}
+  - {outlet: News18 Hindi, section: nation, url: "https://hindi.news18.com/rss/khabar/nation/nation.xml"}
+  - {outlet: Dainik Bhaskar, section: national, url: "https://www.bhaskar.com/rss-v1--category-1061.xml"}
+  - {outlet: TV9 Bharatvarsh, section: home, url: "https://www.tv9hindi.com/feed"}

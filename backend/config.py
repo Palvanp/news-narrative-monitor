@@ -19,11 +19,21 @@ class Settings(BaseSettings):
     device: str = "auto"
     embedding_model: str = "BAAI/bge-m3"
     sentiment_model: str = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
-    hindi_ner_model: str = "ai4bharat/IndicNER"
+    # Open Hindi NER (IIT Bombay HiNER on MuRIL). Its repo ships no usable vocabulary,
+    # so the tokenizer comes from the base model it was fine-tuned from.
+    hindi_ner_model: str = "cfilt/HiNER-collapsed-muril-base-cased"
+    hindi_ner_tokenizer: str = "google/muril-base-cased"
+    # comma-separated: rss, gdelt. GDELT's API rate-limits heavily, so it is off by default.
+    news_sources: str = "rss"
+
     # articles less similar than this to the monitor topic are left out of clustering
     relevance_min: float = 0.0
 
     data_dir: Path = PROJECT_ROOT / "data"
+
+    @property
+    def enabled_sources(self) -> list[str]:
+        return [s.strip().lower() for s in self.news_sources.split(",") if s.strip()]
 
     @property
     def resolved_database_url(self) -> str:

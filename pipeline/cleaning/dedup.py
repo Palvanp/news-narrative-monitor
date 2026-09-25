@@ -12,7 +12,7 @@ from collections.abc import Sequence
 import numpy as np
 
 from pipeline.cleaning.urls import normalize_url
-from pipeline.ingestion.gdelt import RawArticle
+from pipeline.ingestion.types import RawArticle
 
 _SITE_SUFFIX = re.compile(r"\s+[-|–—:]\s+[^-|–—:]{2,60}$")
 MIN_HEADLINE_WORDS = 4

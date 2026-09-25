@@ -14,16 +14,16 @@ India:
   aliases: [India, Indian, Bharat, भारत, भारतीय, हिंदुस्तान, हिन्दुस्तान]
 United States:
   type: COUNTRY
-  aliases: [United States, US, U.S., USA, U.S.A., America, American, Washington, अमेरिका, अमरीका, अमेरिकी, अमरीकी, यूएस, संयुक्त राज्य अमेरिका, वॉशिंगटन, वाशिंगटन]
+  aliases: [United States, US, U.S., USA, U.S.A., America, American, अमेरिका, अमरीका, अमेरिकी, अमरीकी, यूएस, संयुक्त राज्य अमेरिका]
 China:
   type: COUNTRY
-  aliases: [China, Chinese, Beijing, चीन, चीनी, बीजिंग]
+  aliases: [China, Chinese, चीन, चीनी]
 European Union:
   type: ORG
   aliases: [European Union, EU, यूरोपीय संघ, ईयू]
 Russia:
   type: COUNTRY
-  aliases: [Russia, Russian, Moscow, रूस, रूसी]
+  aliases: [Russia, Russian, रूस, रूसी]
 
 Narendra Modi:
   type: PERSON
@@ -43,6 +43,57 @@ Nirmala Sitharaman:
 Rahul Gandhi:
   type: PERSON
   aliases: [Rahul Gandhi, राहुल गांधी]
+Priyanka Gandhi Vadra:
+  type: PERSON
+  aliases: [Priyanka Gandhi Vadra, Priyanka Gandhi, प्रियंका गांधी, प्रियंका गांधी वाड्रा]
+Mamata Banerjee:
+  type: PERSON
+  aliases: [Mamata Banerjee, ममता बनर्जी, ममता]
+Sukhbir Singh Sandhu:
+  type: PERSON
+  aliases: [Sukhbir Singh Sandhu, सुखबीर सिंह संधू]
+Vivek Joshi:
+  type: PERSON
+  aliases: [Vivek Joshi, विवेक जोशी]
+Chirag Paswan:
+  type: PERSON
+  aliases: [Chirag Paswan, चिराग पासवान]
+Abhijeet Dipke:
+  type: PERSON
+  aliases: [Abhijeet Dipke, Abhijit Dipke, अभिजीत दीपके, अभिजीत दिपके, अभिजीत दीपक]
+Cockroach Janta Party:
+  type: PARTY
+  match: true
+  aliases: [Cockroach Janta Party, Cockroach Janata Party, CJP, कॉकरोच जनता पार्टी, सीजेपी]
+West Bengal:
+  type: LOC
+  aliases: [West Bengal, Bengal, पश्चिम बंगाल, बंगाल]
+The Indian Express:
+  type: ORG
+  aliases: [Indian Express, The Indian Express, Express, इंडियन एक्सप्रेस]
+
+Gyanesh Kumar:
+  type: PERSON
+  aliases: [Gyanesh Kumar, CEC Gyanesh Kumar, ज्ञानेश कुमार]
+Mallikarjun Kharge:
+  type: PERSON
+  aliases: [Mallikarjun Kharge, Kharge, मल्लिकार्जुन खड़गे, खड़गे, खरगे]
+Amit Shah:
+  type: PERSON
+  aliases: [Amit Shah, अमित शाह]
+
+Election Commission of India:
+  type: GOV
+  match: true
+  aliases: [Election Commission, Election Commission of India, ECI, EC, poll panel, चुनाव आयोग, निर्वाचन आयोग, भारत निर्वाचन आयोग, ईसी]
+Chief Election Commissioner:
+  type: GOV
+  match: true
+  aliases: [Chief Election Commissioner, CEC, मुख्य चुनाव आयुक्त, मुख्य निर्वाचन आयुक्त, सीईसी]
+Supreme Court of India:
+  type: GOV
+  match: true
+  aliases: [Supreme Court, सुप्रीम कोर्ट, उच्चतम न्यायालय]  # not "SC": also Scheduled Castes
 
 Bharatiya Janata Party:
   type: PARTY
@@ -114,3 +165,15 @@ GST:
   type: POLICY
   match: true
   aliases: [GST, Goods and Services Tax, जीएसटी, वस्तु एवं सेवा कर]
+Special Intensive Revision:
+  type: POLICY
+  match: true
+  aliases: [Special Intensive Revision, SIR, electoral roll revision, विशेष गहन पुनरीक्षण, एसआईआर]
+Vote theft allegations:
+  type: POLICY
+  match: true
+  aliases: [vote chori, vote theft, वोट चोरी]
+Impeachment motion:
+  type: POLICY
+  match: true
+  aliases: [impeachment, impeach, removal motion, महाभियोग]

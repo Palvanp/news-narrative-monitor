@@ -7,13 +7,15 @@ HINDI_STOP_WORDS = set(
     """का की के में है हैं और से को पर यह ने एक भी कि था थे थी इस इसके लिए तो ही कर किया
     गया गई गए हो रहे रहा रही साथ बाद अब जो नहीं या तक वह वे उन उनके उसके अपने करने कहा होगा
     दिया सकते बताया जा ना लेकर द्वारा बीच वाले वाली होने हुए हुई कुछ कई इन इसे उसे जब तब यहां वहां
-    सबसे बहुत अधिक करते करता करती किए लिया लेकिन क्योंकि अगर फिर साल दिन खबर न्यूज़ समाचार""".split()
+    सबसे बहुत अधिक करते करता करती किए लिया लेकिन क्योंकि अगर फिर साल दिन खबर न्यूज़ समाचार
+    उन्होंने उन्हें इसमें उसमें कहना कहते जाता जाती जाते होता होती होते बताते""".split()
 )
 EXTRA_STOP_WORDS = {"said", "says", "news", "also", "new", "year", "years", "just", "like", "according", "report", "reports"}
 STOP_WORDS = list(ENGLISH_STOP_WORDS | HINDI_STOP_WORDS | EXTRA_STOP_WORDS)
 
 # Latin words of 3+ letters, or Devanagari runs (letters plus vowel signs) of 2+ characters.
-TOKEN_PATTERN = r"(?u)\b[a-zA-Z][a-zA-Z\-]{2,}\b|[\u0900-\u097F]{2,}"
+# The danda (U+0964/0965) is sentence punctuation, so it is excluded from word runs.
+TOKEN_PATTERN = r"(?u)\b[a-zA-Z][a-zA-Z\-]{2,}\b|[\u0900-\u0963\u0966-\u097F]{2,}"
 
 
 def ctfidf_keywords(texts: list[str], labels: list[int], top_k: int = 8) -> dict[int, list[str]]:

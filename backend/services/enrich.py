@@ -1,7 +1,7 @@
 """Stage 2: embeddings, near-duplicate dedup, topic relevance, sentiment, entities.
 
-Models are loaded one at a time and released before the next, so peak GPU use
-stays within a 6 GB card.
+The sentiment and NER models are loaded one at a time and released after use.
+The embedding model stays loaded for the analysis stage (all three fit in 6 GB).
 """
 
 from collections import Counter, defaultdict
@@ -13,7 +13,7 @@ from backend.config import get_settings
 from backend.models import Article, ArticleEmbedding, ArticleEntity, Entity, Monitor, MonitoringRun, SentimentScore
 from backend.services.progress import Reporter
 from pipeline.cleaning.dedup import near_duplicates
-from pipeline.embeddings.encoder import Encoder, article_text
+from pipeline.embeddings.encoder import article_text, shared_encoder
 from pipeline.entities.extractor import EntityExtractor, Mention
 from pipeline.sentiment.classifier import SentimentClassifier, sentiment_text
 
@@ -35,12 +35,10 @@ def enrich(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
         raise RuntimeError("No articles were collected for this monitor; try a broader topic or longer time range")
 
     report("embed", 0.0, f"Embedding {len(articles)} articles")
-    encoder = Encoder(settings.embedding_model)
-    try:
-        vectors = encoder.encode([article_text(a.title, a.body) for a in articles])
-        topic_vector = encoder.encode([topic_text(monitor)])[0]
-    finally:
-        encoder.close()
+    # kept loaded for the analysis stage; the runner releases it at the end of the run
+    encoder = shared_encoder(settings.embedding_model)
+    vectors = encoder.encode([article_text(a.title, a.body) for a in articles])
+    topic_vector = encoder.encode([topic_text(monitor)])[0]
 
     near = near_duplicates(vectors, [a.language for a in articles])
     active: list[Article] = []
@@ -71,7 +69,7 @@ def enrich(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
     session.commit()
 
     report("entities", 0.6, f"Extracting entities from {len(active)} articles")
-    extractor = EntityExtractor(settings.hindi_ner_model)
+    extractor = EntityExtractor(settings.hindi_ner_model, settings.hindi_ner_tokenizer)
     try:
         mentions = extractor.extract_many([(a.title, a.body, a.language) for a in active])
     finally:

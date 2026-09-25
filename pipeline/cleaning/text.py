@@ -29,13 +29,20 @@ def clean_body(value: str | None) -> str:
     return "\n".join(p for p in paragraphs if p)
 
 
+def _is_letter(ch: str) -> bool:
+    # Devanagari vowel signs and viramas are combining marks (M*), not alphabetic,
+    # but they are as much a part of a Hindi word as letters are.
+    return unicodedata.category(ch)[0] in "LM"
+
+
 def is_malformed(text: str, min_letters: int = 15) -> bool:
-    """Too short, mojibake-heavy, or mostly non-letters."""
+    """Too short, mojibake-heavy, or mostly non-letters (spaces don't count against it)."""
     if not text:
         return True
-    letters = sum(ch.isalpha() for ch in text)
+    letters = sum(_is_letter(ch) for ch in text)
     if letters < min_letters:
         return True
     if text.count("�") / len(text) > 0.01:
         return True
-    return letters / len(text) < 0.5
+    visible = sum(not ch.isspace() for ch in text)
+    return letters / visible < 0.6

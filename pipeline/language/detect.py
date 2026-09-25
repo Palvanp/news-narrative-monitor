@@ -21,9 +21,10 @@ CANDIDATES = [
     Language.TELUGU,
 ]
 
-GDELT_NAME_TO_CODE = {"english": "en", "hindi": "hi", "marathi": "mr", "bengali": "bn", "urdu": "ur"}
+# Sources declare language as a name (GDELT: "Hindi") or a code (feeds: "hi").
+HINT_TO_CODE = {"english": "en", "hindi": "hi", "marathi": "mr", "bengali": "bn", "urdu": "ur"}
 
-# Below this much text, lingua is unreliable and GDELT's label wins on disagreement.
+# Below this much text, lingua is unreliable and the source's declared language wins on disagreement.
 MIN_CHARS_FOR_OVERRIDE = 200
 
 
@@ -43,13 +44,14 @@ def detect(text: str) -> str | None:
     return _code(lang) if lang else None
 
 
-def resolve_language(title: str, body: str | None, gdelt_language: str | None) -> str | None:
-    gdelt_code = GDELT_NAME_TO_CODE.get((gdelt_language or "").lower())
+def resolve_language(title: str, body: str | None, hint: str | None) -> str | None:
+    hint = (hint or "").lower()
+    hint_code = hint if hint in HINT_TO_CODE.values() else HINT_TO_CODE.get(hint)
     text = f"{title}\n{body[:2000]}" if body else title
     detected = detect(text)
     if detected is None:
-        return gdelt_code
-    if gdelt_code is None or detected == gdelt_code:
+        return hint_code
+    if hint_code is None or detected == hint_code:
         return detected
-    return detected if len(text) >= MIN_CHARS_FOR_OVERRIDE else gdelt_code
+    return detected if len(text) >= MIN_CHARS_FOR_OVERRIDE else hint_code
 

@@ -1,4 +1,4 @@
-"""Stage 1: collect from GDELT, fetch bodies, clean, deduplicate (URL/headline), detect language."""
+"""Stage 1: collect coverage (RSS and/or GDELT), fetch bodies, clean, deduplicate (URL/headline), detect language."""
 
 from collections import Counter
 
@@ -12,8 +12,44 @@ from pipeline.cleaning.dedup import dedup_urls, headline_duplicates
 from pipeline.cleaning.text import clean_body, clean_text, is_malformed
 from pipeline.cleaning.urls import normalize_url
 from pipeline.ingestion.bodies import fetch_bodies
-from pipeline.ingestion.gdelt import GdeltClient, RawArticle, collect
+from pipeline.ingestion.gdelt import GdeltClient, collect
+from pipeline.ingestion.rss import collect_rss, load_feeds
+from pipeline.ingestion.topic import build_matcher
+from pipeline.ingestion.types import RawArticle
 from pipeline.language.detect import resolve_language
+
+MIN_SUMMARY_CHARS = 80
+
+
+def collect_sources(monitor: Monitor, run: MonitoringRun, sources: list[str], report: Reporter) -> tuple[list[RawArticle], dict]:
+    cache = get_settings().data_dir / "cache"
+    raw: list[RawArticle] = []
+    source_stats: dict = {}
+    if "rss" in sources:
+        report("collect", 0.0, "Reading publisher news feeds")
+        items, source_stats["rss"] = collect_rss(
+            load_feeds(monitor.languages),
+            build_matcher(monitor.topic, monitor.hindi_keywords),
+            run.window_start,
+            run.window_end,
+            cache_dir=cache / "rss",
+            on_progress=lambda i, n: report("collect", 0.15 * i / n, f"Read {i}/{n} feeds"),
+        )
+        raw.extend(items)
+    if "gdelt" in sources:
+        report("collect", 0.15, "Querying GDELT")
+        items = collect(
+            GdeltClient(cache_dir=cache / "gdelt"),
+            topic=monitor.topic,
+            languages=monitor.languages,
+            end=run.window_end,
+            hours=monitor.time_range_hours,
+            hindi_keywords=monitor.hindi_keywords,
+            on_progress=lambda i, n, r: report("collect", 0.15 + 0.15 * (i - 1) / n, f"GDELT query {i}/{n} ({r} requests)"),
+        )
+        source_stats["gdelt"] = {"collected": len(items)}
+        raw.extend(items)
+    return raw, source_stats
 
 
 def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Reporter) -> None:
@@ -21,17 +57,10 @@ def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
     cache = settings.data_dir / "cache"
     stats: Counter = Counter()
 
-    report("collect", 0.0, "Querying GDELT")
-    raw = collect(
-        GdeltClient(cache_dir=cache / "gdelt"),
-        topic=monitor.topic,
-        languages=monitor.languages,
-        end=run.window_end,
-        hours=monitor.time_range_hours,
-        hindi_keywords=monitor.hindi_keywords,
-        on_progress=lambda i, n, r: report("collect", 0.3 * (i - 1) / n, f"GDELT query {i}/{n} ({r} requests)"),
-    )
+    raw, source_stats = collect_sources(monitor, run, settings.enabled_sources, report)
     stats["collected"] = len(raw)
+    if not raw:
+        raise RuntimeError("No matching coverage found in the news feeds for this topic and time window")
     articles, stats["url_duplicates"] = dedup_urls(raw)
 
     report("fetch_bodies", 0.3, f"Fetching {len(articles)} article pages")
@@ -48,10 +77,13 @@ def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
         a.body = clean_body(a.body) or None
         if a.body and is_malformed(a.body, min_letters=100):
             a.body, a.body_status = None, "failed"
+        if a.body is None and a.summary and len(a.summary) >= MIN_SUMMARY_CHARS:
+            # page unreachable (paywall, bot block): the feed's summary is better than nothing
+            a.body, a.body_status = a.summary, "summary"
         if is_malformed(a.title):
             stats["malformed"] += 1
             continue
-        lang = resolve_language(a.title, a.body, a.gdelt_language)
+        lang = resolve_language(a.title, a.body, a.language_hint)
         if lang not in monitor.languages:
             stats["other_language"] += 1
             continue
@@ -70,8 +102,15 @@ def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
 
     stats["stored"] = len(rows)
     stats["bodies_ok"] = sum(r.body_status == "ok" for r in rows)
+    stats["unique_sources"] = len({r.source_id for r in rows if r.duplicate_of is None and r.source_id})
     by_language = Counter(r.language for r in rows if r.duplicate_of is None)
-    run.stats = {**(run.stats or {}), **dict(stats), "by_language": dict(by_language)}
+    run.stats = {
+        **(run.stats or {}),
+        **dict(stats),
+        "by_language": dict(by_language),
+        "by_origin": dict(Counter(r.origin for r in rows if r.duplicate_of is None)),
+        "sources": source_stats,
+    }
     session.commit()
 
 
@@ -85,7 +124,8 @@ def _to_row(session: Session, run: MonitoringRun, a: RawArticle, lang: str) -> A
         body=a.body,
         body_status=a.body_status,
         language=lang,
-        gdelt_language=a.gdelt_language,
+        declared_language=a.language_hint,
+        origin=a.origin,
         published_at=a.seen_at,
     )
 

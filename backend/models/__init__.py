@@ -76,9 +76,10 @@ class Article(Base):
     normalized_url: Mapped[str] = mapped_column(Text)
     title: Mapped[str] = mapped_column(Text)
     body: Mapped[str | None] = mapped_column(Text)
-    body_status: Mapped[str] = mapped_column(String(20), default="pending")  # pending|ok|failed|skipped
+    body_status: Mapped[str] = mapped_column(String(20), default="pending")  # pending|ok|summary|failed
     language: Mapped[str | None] = mapped_column(String(8))
-    gdelt_language: Mapped[str | None] = mapped_column(String(40))
+    declared_language: Mapped[str | None] = mapped_column(String(40))
+    origin: Mapped[str | None] = mapped_column(String(20))  # rss|gdelt
     published_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
     fetched_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     duplicate_of: Mapped[int | None] = mapped_column(ForeignKey("articles.id"))

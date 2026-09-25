@@ -55,7 +55,8 @@ def test_fetch_range_splits_until_under_cap_without_gaps_or_overlap():
 
 def test_parse_response_reads_fixture_and_skips_untitled():
     articles = parse_response(FIXTURE.read_text(encoding="utf-8"), "en")
-    assert [a.gdelt_language for a in articles] == ["English", "Hindi"]
+    assert [a.language_hint for a in articles] == ["English", "Hindi"]
+    assert {a.origin for a in articles} == {"gdelt"}
     assert articles[0].seen_at == datetime(2026, 9, 23, 10, 15, tzinfo=timezone.utc)
 
 

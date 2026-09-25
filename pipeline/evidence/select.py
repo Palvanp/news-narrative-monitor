@@ -48,9 +48,34 @@ def representatives(
     return selected
 
 
-def split_sentences(text: str) -> list[str]:
-    parts = _SENTENCE_END.split(text.replace("\n", " "))
-    return [p.strip() for p in parts if MIN_SENTENCE_CHARS <= len(p.strip()) <= MAX_SENTENCE_CHARS]
+# Navigation and promo lines publishers put inside article text.
+_BOILERPLATE = re.compile(
+    r"^(also read|read more|read also|click here|subscribe|follow us|यह भी पढ़ें|ये भी पढ़ें|इसे भी पढ़ें|और पढ़ें)",
+    re.IGNORECASE,
+)
+
+
+# Page furniture that leaks into extracted text (video pages, app promos, datelines).
+_JUNK = re.compile(r"https?://|www\.|advertisement|last updated|download the app|mobile app", re.IGNORECASE)
+_LEADING_JUNK = re.compile(r"^(with inputs from \w+\s*|quick answers\s*|new delhi:\s*)+", re.IGNORECASE)
+
+
+def strip_title(body: str, title: str) -> str:
+    """Extracted article text often starts with the headline and no full stop,
+    which would glue it onto the first sentence."""
+    body = body.lstrip()
+    return body[len(title) :] if title and body.startswith(title) else body
+
+
+def split_sentences(text: str, title: str | None = None) -> list[str]:
+    if title:
+        text = strip_title(text, title)
+    parts = (_LEADING_JUNK.sub("", p.strip()) for p in _SENTENCE_END.split(text.replace("\n", " ")))
+    return [
+        p
+        for p in parts
+        if MIN_SENTENCE_CHARS <= len(p) <= MAX_SENTENCE_CHARS and not _BOILERPLATE.match(p) and not _JUNK.search(p)
+    ]
 
 
 def best_sentence(sentences: list[str], sentence_vectors: np.ndarray, center: np.ndarray) -> str | None:

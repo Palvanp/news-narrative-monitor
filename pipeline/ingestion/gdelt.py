@@ -13,11 +13,12 @@ import logging
 import re
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import httpx
+
+from pipeline.ingestion.types import RawArticle
 
 log = logging.getLogger(__name__)
 
@@ -31,20 +32,6 @@ RATE_LIMIT_MARKER = "Please limit requests"
 GDELT_LANG = {"en": "english", "hi": "hindi"}
 
 STOPWORDS = {"the", "and", "for", "with", "from", "into", "over", "about", "between", "amid", "of", "on", "in"}
-
-
-@dataclass
-class RawArticle:
-    url: str
-    title: str
-    domain: str
-    seen_at: datetime
-    gdelt_language: str | None = None
-    source_country: str | None = None
-    query_language: str | None = None
-    body: str | None = None
-    body_status: str = "pending"
-    extra: dict = field(default_factory=dict)
 
 
 def build_query(topic: str, language: str) -> str:
@@ -90,9 +77,9 @@ def parse_response(text: str, query_language: str | None = None) -> list[RawArti
                 title=item["title"],
                 domain=item.get("domain") or "",
                 seen_at=parse_seendate(item["seendate"]),
-                gdelt_language=item.get("language"),
+                origin="gdelt",
+                language_hint=item.get("language"),
                 source_country=item.get("sourcecountry") or None,
-                query_language=query_language,
             )
         )
     return articles

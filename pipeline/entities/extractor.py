@@ -1,4 +1,4 @@
-"""Named-entity extraction for English (spaCy) and Hindi (IndicNER), plus a gazetteer.
+"""Named-entity extraction for English (spaCy) and Hindi (a MuRIL NER model), plus a gazetteer.
 
 NER finds people, organisations and places. The gazetteer does two things NER
 can't: it maps surface forms in both languages onto one canonical entity
@@ -7,6 +7,7 @@ bodies and policy terms by direct matching.
 """
 
 import re
+import unicodedata
 from collections import Counter
 from dataclasses import dataclass
 from functools import cached_property
@@ -19,7 +20,8 @@ from pipeline import nlp_env
 GAZETTEER_PATH = Path(__file__).with_name("gazetteer.yaml")
 
 SPACY_TYPES = {"PERSON": "PERSON", "ORG": "ORG", "GPE": "LOC", "LOC": "LOC", "FAC": "LOC", "EVENT": "EVENT", "LAW": "POLICY"}
-INDICNER_TYPES = {"PER": "PERSON", "ORG": "ORG", "LOC": "LOC"}
+# Hindi models label either PER/ORG/LOC (IndicNER) or PERSON/ORGANIZATION/LOCATION (HiNER).
+HINDI_TYPES = {"PER": "PERSON", "PERSON": "PERSON", "ORG": "ORG", "ORGANIZATION": "ORG", "LOC": "LOC", "LOCATION": "LOC"}
 # NORP ("Indian", "American") only counts when the gazetteer maps it to a country.
 GAZETTEER_ONLY = {"NORP"}
 
@@ -32,7 +34,6 @@ ENGLISH_BODY_CHARS = 3000
 _WORD = "[\\wऀ-ॿ]"
 # Danda (।) ends a sentence even without a following space; "." needs one (U.S., Rs.).
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+|(?<=।)\s*")
-_EDGE_PUNCT = re.compile(r"^[\W_]+|[\W_]+$")
 
 
 @dataclass(frozen=True)
@@ -56,9 +57,11 @@ class Gazetteer:
     def __init__(self, path: Path = GAZETTEER_PATH):
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         self.aliases: dict[str, tuple[str, str]] = {}
+        self.members: dict[str, list[str]] = {}  # canonical name -> all its aliases
         patterns: list[tuple[re.Pattern, str, str]] = []
         for canonical, spec in data.items():
             etype = spec["type"]
+            self.members[canonical] = [str(a) for a in spec["aliases"]]
             for alias in spec["aliases"]:
                 alias = str(alias)
                 self.aliases[_alias_key(alias)] = (canonical, etype)
@@ -79,11 +82,25 @@ class Gazetteer:
         ]
 
 
+def _strip_edges(surface: str) -> str:
+    # Trim punctuation from both ends. Not a \W regex: Devanagari vowel signs are
+    # non-word characters to Python, and "गांधी" would lose its final ी.
+    def keep(ch: str) -> bool:
+        return unicodedata.category(ch)[0] in "LMN"
+
+    start, end = 0, len(surface)
+    while start < end and not keep(surface[start]):
+        start += 1
+    while end > start and not keep(surface[end - 1]):
+        end -= 1
+    return surface[start:end]
+
+
 def clean_surface(surface: str) -> str | None:
     surface = " ".join(surface.split())
     surface = re.sub(r"^(the|The)\s+", "", surface)
     surface = re.sub(r"['’]s$", "", surface)
-    surface = _EDGE_PUNCT.sub("", surface)
+    surface = _strip_edges(surface)
     if len(surface) < 2 or len(surface) > 60 or not any(c.isalpha() for c in surface):
         return None
     return surface
@@ -99,6 +116,14 @@ def resolve(gazetteer: Gazetteer, surface: str, ner_label: str, type_map: dict[s
     if ner_label in GAZETTEER_ONLY or ner_label not in type_map:
         return None
     return Mention(surface, type_map[ner_label], surface)
+
+
+def full_word_span(text: str, start: int, end: int) -> str:
+    """The entity's text, extended over trailing vowel signs/viramas that some
+    tokenizers leave out of their offsets ("राहुल गांध" -> "राहुल गांधी")."""
+    while end < len(text) and unicodedata.category(text[end]).startswith("M"):
+        end += 1
+    return text[start:end]
 
 
 def hindi_chunks(title: str, body: str | None) -> list[str]:
@@ -119,8 +144,15 @@ def hindi_chunks(title: str, body: str | None) -> list[str]:
 
 
 class EntityExtractor:
-    def __init__(self, hindi_model: str, device: str | None = None, gazetteer: Gazetteer | None = None):
+    def __init__(
+        self,
+        hindi_model: str,
+        hindi_tokenizer: str | None = None,
+        device: str | None = None,
+        gazetteer: Gazetteer | None = None,
+    ):
         self.hindi_model = hindi_model
+        self.hindi_tokenizer = hindi_tokenizer or hindi_model
         self.device = device or nlp_env.resolve_device()
         self.gazetteer = gazetteer or Gazetteer()
 
@@ -132,12 +164,14 @@ class EntityExtractor:
 
     @cached_property
     def _indic(self):
-        from transformers import pipeline
+        from transformers import AutoTokenizer, pipeline
 
         return pipeline(
             "token-classification",
             model=self.hindi_model,
-            aggregation_strategy="simple",
+            tokenizer=AutoTokenizer.from_pretrained(self.hindi_tokenizer),
+            # "first" labels whole words, so names aren't split at sub-word pieces
+            aggregation_strategy="first",
             device=0 if self.device == "cuda" else -1,
         )
 
@@ -160,11 +194,12 @@ class EntityExtractor:
                 chunk_owner.append(i)
                 chunks.append(chunk)
         if chunks:
-            for i, ents in zip(chunk_owner, self._indic(chunks, batch_size=16)):
+            for i, chunk, ents in zip(chunk_owner, chunks, self._indic(chunks, batch_size=16)):
                 for ent in ents:
                     if ent["score"] < MIN_NER_SCORE:
                         continue
-                    mention = resolve(self.gazetteer, ent["word"], ent["entity_group"], INDICNER_TYPES)
+                    surface = full_word_span(chunk, ent["start"], ent["end"]) if ent.get("start") is not None else ent["word"]
+                    mention = resolve(self.gazetteer, surface, ent["entity_group"], HINDI_TYPES)
                     if mention:
                         results[i][mention] += 1
 

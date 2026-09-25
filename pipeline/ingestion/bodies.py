@@ -14,11 +14,11 @@ from pathlib import Path
 import httpx
 import trafilatura
 
-from pipeline.ingestion.gdelt import RawArticle
+from pipeline.ingestion.rss import USER_AGENT
+from pipeline.ingestion.types import RawArticle
 
 log = logging.getLogger(__name__)
 
-USER_AGENT = "Mozilla/5.0 (compatible; nazar-research-prototype)"
 MIN_BODY_CHARS = 200
 
 

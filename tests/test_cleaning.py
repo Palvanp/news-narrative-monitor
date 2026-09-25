@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pipeline.cleaning.dedup import dedup_urls, headline_duplicates, normalize_headline
 from pipeline.cleaning.text import clean_body, clean_text, is_malformed
 from pipeline.cleaning.urls import normalize_url
-from pipeline.ingestion.gdelt import RawArticle
+from pipeline.ingestion.types import RawArticle
 
 
 def art(url, title, hour, body_status="failed"):
@@ -66,3 +66,8 @@ def test_near_duplicates_same_language_only_and_collapse_chains():
     langs = ["en", "en", "hi", "en", "en"]
     # item 1 near-dups item 0; item 2 is Hindi so stays; item 4 matches 0 (canonical), not 1
     assert near_duplicates(vectors, langs) == [None, 0, None, None, 0]
+
+
+def test_hindi_headlines_are_not_malformed():
+    assert not is_malformed("बंगाल में कांग्रेस का EC के खिलाफ प्रदर्शन, ज्ञानेश कुमार की गिरफ्तारी की मांग")
+    assert not is_malformed("क्‍या है विशेष गहन पुनरीक्षण?")

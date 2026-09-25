@@ -40,3 +40,20 @@ class Encoder:
     def close(self) -> None:
         del self.model
         nlp_env.release_gpu()
+
+
+# The embedding model is needed by several stages of one run (articles, then
+# evidence sentences). Loading it twice doubles peak RAM while it initializes,
+# so one instance is shared per process until the run releases it.
+_shared: dict[str, Encoder] = {}
+
+
+def shared_encoder(model_name: str) -> Encoder:
+    if model_name not in _shared:
+        _shared[model_name] = Encoder(model_name)
+    return _shared[model_name]
+
+
+def release_shared_encoders() -> None:
+    while _shared:
+        _shared.popitem()[1].close()

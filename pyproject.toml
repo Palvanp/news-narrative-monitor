@@ -21,6 +21,10 @@ dependencies = [
     "scikit-learn>=1.9.1",
     "umap-learn>=0.5.12",
     "spacy>=3.8.16",
+    "en-core-web-sm",
+    "feedparser>=6.0.14",
+    "sentencepiece>=0.2.2",
+    "protobuf>=7.36.2",
 ]
 
 [project.optional-dependencies]
@@ -40,6 +44,7 @@ testpaths = ["tests"]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cu126" }
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
 
 [[tool.uv.index]]
 name = "pytorch-cu126"

@@ -60,3 +60,44 @@ def test_split_and_best_sentence():
     assert len(sentences) == 2
     vecs = np.array([[1.0, 0.0], [0.0, 1.0]])
     assert best_sentence(sentences, vecs, np.array([1.0, 0.0])) == sentences[0]
+
+
+def test_language_centering_groups_same_story_across_languages():
+    from pipeline.clustering.cluster import remove_language_offsets
+
+    # story A and story B, each reported in en and hi; hi carries a shared offset
+    story_a, story_b, hindi = np.array([1.0, 0, 0, 0]), np.array([0, 1.0, 0, 0]), np.array([0, 0, 0, 3.0])
+    vecs = np.stack([story_a, story_b, story_a + hindi, story_b + hindi])
+    vecs /= np.linalg.norm(vecs, axis=1, keepdims=True)
+    raw_sim = vecs[0] @ vecs[2]
+    centered = remove_language_offsets(vecs, ["en", "en", "hi", "hi"])
+    assert centered[0] @ centered[2] > centered[0] @ centered[1]  # same story beats same language
+    assert centered[0] @ centered[2] > raw_sim
+
+
+def test_attach_unclustered_only_within_cluster_radius():
+    from pipeline.clustering.cluster import attach_unclustered
+
+    vecs = np.array([[1.0, 0.0], [0.99, 0.14], [0.97, 0.24], [0.0, 1.0]])
+    vecs /= np.linalg.norm(vecs, axis=1, keepdims=True)
+    labels = attach_unclustered(vecs, np.array([0, 0, -1, -1]))
+    assert labels[2] == -1  # further than the cluster's own members
+    near = attach_unclustered(vecs, np.array([0, -1, 0, -1]))
+    assert near[1] == 0 and near[3] == -1
+
+
+def test_keywords_ignore_danda_and_evidence_skips_boilerplate():
+    kw = ctfidf_keywords(["यह बड़ा फैसला है। आयोग ने कहा।", "दूसरी खबर है। अदालत"], [0, 1], top_k=5)
+    assert not any("।" in k for ks in kw.values() for k in ks)
+    assert split_sentences("Also Read: Gyanesh Kumar controversy explained in full detail here. The commission denied every allegation made by the opposition today.") == [
+        "The commission denied every allegation made by the opposition today."
+    ]
+
+
+def test_evidence_drops_headline_prefix_and_page_furniture():
+    title = "CJP's ultimatum to Gyanesh Kumar"
+    body = "CJP's ultimatum to Gyanesh Kumar The party said it will begin nationwide protests from October 2. News18 Mobile App - https://onelink.to/x Advertisement more videos here."
+    assert split_sentences(body, title) == ["The party said it will begin nationwide protests from October 2."]
+    assert split_sentences("With inputs from PTI Quick Answers Rahul Gandhi criticised the commission over the report.") == [
+        "Rahul Gandhi criticised the commission over the report."
+    ]
