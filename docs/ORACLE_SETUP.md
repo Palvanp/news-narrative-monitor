@@ -15,6 +15,8 @@ Nazar thinks the model is on your own machine (`127.0.0.1` means "this computer"
 
 **Time needed:** about 45–60 minutes, most of it waiting for sign-up checks and model downloads.
 
+> **PowerShell or Command Prompt?** Commands for your laptop are shown for both. Check the prompt: **PowerShell** shows `PS C:\Users\you>`, **Command Prompt (CMD)** shows `C:\Users\you>`. `$HOME` and `Get-Content` only work in PowerShell; in CMD use `%USERPROFILE%` and `type`.
+
 ---
 
 ## Step 1: Create an Oracle Cloud account
@@ -30,10 +32,16 @@ Nazar thinks the model is on your own machine (`127.0.0.1` means "this computer"
 
 An **SSH key** is a pair of files that acts like a password you never type. The **public** half goes to Oracle; the **private** half stays on your laptop and must never be shared.
 
-Open **PowerShell** and run:
+Run one of these. If the `.ssh` folder doesn't exist yet, create it first: `mkdir $HOME\.ssh` in PowerShell, `mkdir %USERPROFILE%\.ssh` in CMD.
 
 ```powershell
+# PowerShell
 ssh-keygen -t ed25519 -f $HOME\.ssh\nazar_oracle
+```
+
+```cmd
+:: Command Prompt
+ssh-keygen -t ed25519 -f %USERPROFILE%\.ssh\nazar_oracle
 ```
 
 Press Enter twice to skip the passphrase, or set one if you prefer. This creates two files:
@@ -41,10 +49,16 @@ Press Enter twice to skip the passphrase, or set one if you prefer. This creates
 - `C:\Users\<you>\.ssh\nazar_oracle`: **private key** (keep secret)
 - `C:\Users\<you>\.ssh\nazar_oracle.pub`: **public key** (goes to Oracle)
 
-Show the public key so you can copy it:
+Show the public key so you can copy it (one line starting with `ssh-ed25519`):
 
 ```powershell
+# PowerShell
 Get-Content $HOME\.ssh\nazar_oracle.pub
+```
+
+```cmd
+:: Command Prompt
+type %USERPROFILE%\.ssh\nazar_oracle.pub
 ```
 
 ## Step 3: Create the virtual machine
@@ -63,10 +77,14 @@ In the Oracle Console:
 
 ## Step 4: Connect to the server
 
-In PowerShell:
-
 ```powershell
+# PowerShell
 ssh -i $HOME\.ssh\nazar_oracle ubuntu@<IP>
+```
+
+```cmd
+:: Command Prompt
+ssh -i %USERPROFILE%\.ssh\nazar_oracle ubuntu@<IP>
 ```
 
 The first time, it asks whether you trust the server: type `yes`. You're now "inside" the Oracle machine; the prompt looks like `ubuntu@nazar-llm:~$`.
@@ -103,10 +121,16 @@ Type `exit` to leave the server.
 
 ## Step 6: Open the tunnel (every time you use the LLM)
 
-Open a **new PowerShell window** and run the command below. **Keep this window open** while you use Nazar: closing it closes the tunnel.
+Open a **new terminal window** and run the command below. **Keep this window open** while you use Nazar: closing it closes the tunnel.
 
 ```powershell
+# PowerShell
 ssh -i $HOME\.ssh\nazar_oracle -N -o ServerAliveInterval=60 -L 11434:127.0.0.1:11434 ubuntu@<IP>
+```
+
+```cmd
+:: Command Prompt
+ssh -i %USERPROFILE%\.ssh\nazar_oracle -N -o ServerAliveInterval=60 -L 11434:127.0.0.1:11434 ubuntu@<IP>
 ```
 
 - `-L 11434:127.0.0.1:11434` means "my port 11434 → the server's port 11434".
@@ -115,7 +139,7 @@ ssh -i $HOME\.ssh\nazar_oracle -N -o ServerAliveInterval=60 -L 11434:127.0.0.1:1
 
 It looks like nothing happens. That's normal: the window just sits there while the tunnel is open.
 
-**Check it works** (in another PowerShell window):
+**Check it works** (in another window; `curl.exe` in PowerShell, plain `curl` in CMD):
 
 ```powershell
 curl.exe http://127.0.0.1:11434/api/tags
@@ -155,7 +179,8 @@ Nothing to change: Nazar already looks for the LLM at `http://127.0.0.1:11434` (
 |---|---|---|
 | **"Out of capacity for shape VM.Standard.A1.Flex"** | Oracle's free ARM machines in your region are all in use right now | Try again later (capacity frees up over the day). If your region has several *availability domains*, try another one in the Create screen. As a temporary step, create it with 2 OCPU / 12 GB and resize later. |
 | **"Permission denied (publickey)"** | Wrong key or wrong username | Username must be `ubuntu` for Ubuntu images. Check the `-i` path points at the private key whose `.pub` you pasted. |
-| **"UNPROTECTED PRIVATE KEY FILE"** (Windows) | Windows lets other accounts read the key | Run: `icacls $HOME\.ssh\nazar_oracle /inheritance:r /grant:r "$($env:USERNAME):(R)"` |
+| **"Saving key … failed: No such file or directory"** | The `.ssh` folder is missing, or `$HOME` was used in Command Prompt | In CMD use `%USERPROFILE%` (see Step 2), or create the folder first |
+| **"UNPROTECTED PRIVATE KEY FILE"** (Windows) | Windows lets other accounts read the key | PowerShell: `icacls $HOME\.ssh\nazar_oracle /inheritance:r /grant:r "$($env:USERNAME):(R)"` · CMD: `icacls %USERPROFILE%\.ssh\nazar_oracle /inheritance:r /grant:r "%USERNAME%:(R)"` |
 | **"bind: Address already in use"** when starting the tunnel | Something on your laptop already uses port 11434 (another tunnel, or a local Ollama) | Close the other tunnel window, or quit local Ollama. |
 | Nazar still shows **LLM offline** | Tunnel not running, or Ollama stopped on the server | Check the tunnel window is open; on the server run `systemctl status ollama` and `sudo systemctl restart ollama`. |
 | Tunnel keeps dropping | Idle connection closed by the network | Keep `-o ServerAliveInterval=60`; reopen the tunnel. |
