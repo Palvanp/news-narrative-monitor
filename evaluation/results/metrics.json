@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-09-29T12:04:24+00:00",
+  "sentiment": null,
+  "entities": null,
+  "clustering": {
+    "run_id": 4,
+    "topic": "Election Commission CEC Gyanesh Kumar SIR controversy",
+    "articles": 152,
+    "pipeline": {
+      "narratives": 12,
+      "clustered_articles": 139,
+      "unclustered_articles": 13,
+      "silhouette": 0.18,
+      "bilingual_narratives": 12,
+      "bilingual_share": 1.0,
+      "mean_cohesion": 0.678,
+      "sizes": [
+        22,
+        18,
+        14,
+        13,
+        12,
+        12,
+        11,
+        10,
+        8,
+        7,
+        7,
+        5
+      ]
+    },
+    "kmeans_same_k": {
+      "narratives": 12,
+      "clustered_articles": 152,
+      "unclustered_articles": 0,
+      "silhouette": 0.157,
+      "bilingual_narratives": 12,
+      "bilingual_share": 1.0,
+      "mean_cohesion": 0.662,
+      "sizes": [
+        20,
+        18,
+        17,
+        16,
+        14,
+        14,
+        12,
+        11,
+        10,
+        9,
+        9,
+        2
+      ]
+    },
+    "without_language_centering": {
+      "narratives": 13,
+      "clustered_articles": 132,
+      "unclustered_articles": 20,
+      "silhouette": 0.161,
+      "bilingual_narratives": 3,
+      "bilingual_share": 0.231,
+      "mean_cohesion": 0.708,
+      "sizes": [
+        15,
+        14,
+        14,
+        14,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        6,
+        6
+      ]
+    }
+  },
+  "briefs": null
+}

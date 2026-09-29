@@ -1,3 +1,4 @@
+import html
 import re
 import unicodedata
 
@@ -14,6 +15,8 @@ def clean_text(value: str | None) -> str:
         return ""
     if _TAG.search(value):
         value = HTMLParser(value).text(separator=" ")
+    # feed titles often carry HTML entities ("Forms 6 &amp; 8")
+    value = html.unescape(value)
     value = unicodedata.normalize("NFC", value).translate(_INVISIBLE)
     return _WS.sub(" ", value).strip()
 
@@ -24,6 +27,7 @@ def clean_body(value: str | None) -> str:
         return ""
     if _TAG.search(value):
         value = HTMLParser(value).text(separator="\n")
+    value = html.unescape(value)
     value = unicodedata.normalize("NFC", value).translate(_INVISIBLE)
     paragraphs = (_WS.sub(" ", p).strip() for p in value.split("\n"))
     return "\n".join(p for p in paragraphs if p)

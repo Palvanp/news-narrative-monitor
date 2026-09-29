@@ -71,3 +71,7 @@ def test_near_duplicates_same_language_only_and_collapse_chains():
 def test_hindi_headlines_are_not_malformed():
     assert not is_malformed("बंगाल में कांग्रेस का EC के खिलाफ प्रदर्शन, ज्ञानेश कुमार की गिरफ्तारी की मांग")
     assert not is_malformed("क्‍या है विशेष गहन पुनरीक्षण?")
+
+
+def test_clean_text_decodes_html_entities():
+    assert clean_text("Forms 6 &amp; 8: EC&#39;s decision") == "Forms 6 & 8: EC's decision"

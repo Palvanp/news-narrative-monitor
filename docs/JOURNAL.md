@@ -259,6 +259,41 @@ Example summary (a real run):
 
 ---
 
+## Entry 11: Setting up the Oracle server
+
+**What we saw**
+- `ssh-keygen -f $HOME\.ssh\…` failed with "No such file or directory". It had been typed in **Command Prompt**, where `$HOME` isn't a variable (that's PowerShell syntax; CMD uses `%USERPROFILE%`).
+- The "public IP" toggle was greyed out when the network was created inside the instance form.
+- The first attempt picked a 1-core / 1 GB machine, far too small for a language model.
+- "Service limits exceeded": this account's free ARM allowance is **2 cores / 12 GB**, not the 4 / 24 we planned for.
+- "Out of capacity": Oracle's free ARM machines in the region were all taken.
+
+**What we changed**
+- The guide now gives every laptop command for both PowerShell and CMD.
+- The network is created first with Oracle's VCN wizard ("Create VCN with Internet Connectivity"), then selected in the instance form.
+- The instance is sized at 2 OCPU / 12 GB. Both models still fit; answers are just slower.
+- The form was saved as a **stack**, so retrying later is two clicks (Resource Manager → Apply).
+
+**What we learned**
+- Free cloud tiers have hidden constraints: per-account limits smaller than the advertised maximum, and busy regions. Plan for waiting and retrying.
+- Most setup errors are small (a shell's syntax, a missing toggle). Pasting the exact error message is the fastest route to a fix.
+
+## Entry 12: Measuring quality (evaluation)
+
+**What we built**
+- A 150-article labelling set (75 English, 75 Hindi) from real runs, with a plain-language [labelling guide](../evaluation/LABELLING_GUIDE.md), plus scripts that score each model against the labels.
+
+**What we saw while building it**
+- **91 of 150 article texts started by repeating the headline**, and some headlines contained `&amp;` instead of `&`. Feeds send HTML codes (**HTML entities**) and our cleaner never decoded them. That was fixed in the pipeline, not just in the dataset.
+- **The first clustering results** ([docs/evaluation.md](evaluation.md)): with language centering, **12 of 12** narratives mixed English and Hindi; without it, only **3 of 13**. Nazar's grouping also scored slightly better than a standard baseline (silhouette 0.180 vs KMeans' 0.157).
+
+**What we learned**
+- An **ablation** (running the system with one step switched off) is the clearest way to prove a step earns its place.
+- Look at the data before labelling it: the headline repeats would have wasted the labeller's time and skewed the scores.
+- A low silhouette doesn't have to mean bad clusters. Sub-stories of one event naturally overlap, so we pair it with cohesion and manual checks.
+
+---
+
 ## Still weak / open questions
 
 - **Hindi sentiment is unreliable.** The sentiment model (trained on tweets) rated many Hindi protest stories as neutral. The evaluation will measure this.
@@ -306,5 +341,11 @@ Example summary (a real run):
 | **GPU / VRAM** | The graphics card, and its own memory; it runs AI models fast. |
 | **RAM / swapping** | The computer's working memory. When it runs out, Windows uses the disk instead (swapping), which is very slow. |
 | **Latency / cold vs warm start** | Latency is how long you wait. A cold start includes loading everything; a warm start reuses what's already loaded. |
+| **HTML entities** | Codes web pages use for special characters, e.g. `&amp;` for "&". They must be decoded before display. |
+| **Ablation** | Running the system with one step switched off, to measure what that step contributes. |
+| **Silhouette score** | How much closer items are to their own group than to the nearest other group (-1 to 1; higher = better separated). |
+| **Baseline** | A simple reference method (e.g. KMeans, or "always predict the most common label") that a real method should beat. |
+| **Macro-F1** | The average F1 score across classes, so rare classes (like "positive") count as much as common ones. |
+| **Stack (Oracle Resource Manager)** | A saved recipe for creating cloud resources, re-runnable with one click. |
 | **Virtual environment** | A separate folder of Python packages for one project. It doesn't separate memory. |
 | **SQLite / PostgreSQL / pgvector** | SQLite is a database in a single file. PostgreSQL is a database server. pgvector adds fast similarity search on embeddings to PostgreSQL. |
