@@ -74,7 +74,7 @@ def execute_brief(brief_id: int, session_factory: sessionmaker = SessionLocal) -
                 raise RuntimeError("This run has no narratives to brief")
             client = llm_client(session)
             if not client.available():
-                raise RuntimeError("LLM unreachable: start the SSH tunnel to the Oracle VM and try again")
+                raise RuntimeError(client.unavailable_hint)
             result = generate(client, brief.model, run.monitor.topic, window_label(run), contexts)
             brief.content = {"assessment": result["assessment"], "evidence": result["evidence"], "window": window_label(run)}
             brief.markdown = result["markdown"]

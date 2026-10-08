@@ -17,12 +17,15 @@ cd frontend && npm install && npm run dev # UI on http://localhost:5173
 
 The database defaults to SQLite (`data/nazar.db`, created automatically). To use Postgres + pgvector instead, point `DATABASE_URL` at it. That can be a local `docker compose up -d db`, or a hosted Postgres with pgvector such as Neon or Supabase. Then run `uv sync --extra postgres`.
 
-### LLM (Ollama on a remote server)
-Narrative naming and brief generation use [Ollama](https://ollama.com) on a free Oracle Cloud VM, reached through an SSH tunnel. The step-by-step setup is in [docs/ORACLE_SETUP.md](docs/ORACLE_SETUP.md). Once it's set up:
+### LLM
+Narrative naming and brief generation use [Groq](https://console.groq.com) by default. Create a free API key at https://console.groq.com/keys and put it in `.env`:
 
 ```bash
-ssh -i ~/.ssh/nazar_oracle -N -L 11434:127.0.0.1:11434 ubuntu@<vm-ip>
+LLM_PROVIDER=groq
+GROQ_API_KEY=your-key
 ```
+
+To use a self-hosted [Ollama](https://ollama.com) server instead (e.g. a cloud VM reached through an SSH tunnel; see [docs/ORACLE_SETUP.md](docs/ORACLE_SETUP.md)), set `LLM_PROVIDER=ollama` and `OLLAMA_URL`.
 
 `GET /health` (and the status line in the UI) shows whether the database and the LLM are reachable.
 

@@ -96,7 +96,7 @@ export default function BriefView() {
       {busy && (
         <div className="panel">
           <p className="secondary">
-            Writing the brief on the LLM server. On a CPU server this can take a few minutes.
+            Writing the brief. This usually takes under a minute, longer if the LLM's rate limit is reached.
           </p>
         </div>
       )}

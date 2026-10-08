@@ -1,9 +1,16 @@
+from dataclasses import replace
+
+from pipeline.llm import estimate_tokens
+
 from pipeline.generation.brief import (
     BriefDraft,
     Claim,
     Evidence,
     NarrativeAssessment,
     NarrativeContext,
+    SYSTEM,
+    build_prompt,
+    fit_to_budget,
     generate,
     validate,
 )
@@ -52,6 +59,8 @@ def test_validate_strips_fake_citations_and_flags_unsupported_claims():
 
 
 class FakeClient:
+    max_prompt_tokens = None
+
     def generate(self, model, system, prompt, output, **kwargs):
         assert "[E1]" in prompt and "Narrative 2: Talks progress" in prompt
         return draft()
@@ -64,3 +73,22 @@ def test_generate_renders_markdown_with_metrics_and_evidence_links():
     assert "[Headline 1](https://a.in/1)" in md
     assert "Unsupported statements" in md
     assert set(result["evidence"]) == {"E1", "E2", "E3"}
+
+
+def test_fit_to_budget_keeps_everything_without_a_limit():
+    assert fit_to_budget("t", "w", NARRATIVES, None) is NARRATIVES
+
+
+def test_fit_to_budget_trims_excerpts_before_dropping_narratives():
+    long = [replace(n, evidence=[replace(e, excerpt="word " * 200) for e in n.evidence]) for n in NARRATIVES]
+    full = estimate_tokens(SYSTEM + build_prompt("t", "w", long))
+    trimmed = fit_to_budget("t", "w", long, full - 200)
+    assert [n.id for n in trimmed] == [1, 2]  # both narratives kept
+    assert all(len(e.excerpt) < 1000 for n in trimmed for e in n.evidence)
+    assert estimate_tokens(SYSTEM + build_prompt("t", "w", trimmed)) <= full - 200
+
+
+def test_fit_to_budget_drops_smallest_narratives_last():
+    trimmed = fit_to_budget("t", "w", NARRATIVES, estimate_tokens(SYSTEM + build_prompt("t", "w", NARRATIVES[:1])))
+    assert [n.id for n in trimmed] == [1]
+

@@ -1,7 +1,8 @@
+import time
 from contextlib import asynccontextmanager
 
-import httpx
 from fastapi import FastAPI
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
@@ -9,6 +10,7 @@ from backend.api.routes import router
 from backend.config import get_settings
 from backend.db import engine, init_db
 from backend.logging_setup import setup_logging
+from backend.services.naming import make_client
 
 setup_logging()
 
@@ -29,6 +31,20 @@ app.add_middleware(
 app.include_router(router)
 
 
+_llm_ok_at: float | None = None
+
+
+async def llm_available(client) -> bool:
+    """The UI polls /health every 15 s; once the LLM answers, re-check it at most
+    once a minute. Failures are re-checked on every poll, so a fix shows up quickly."""
+    global _llm_ok_at
+    if _llm_ok_at is not None and time.monotonic() - _llm_ok_at < 60:
+        return True
+    ok = await run_in_threadpool(client.available)
+    _llm_ok_at = time.monotonic() if ok else None
+    return ok
+
+
 @app.get("/health")
 async def health() -> dict:
     settings = get_settings()
@@ -40,17 +56,10 @@ async def health() -> dict:
     except Exception as exc:  # report, don't crash the health check
         db = {"ok": False, "error": str(exc)}
 
-    try:
-        async with httpx.AsyncClient(timeout=3) as client:
-            resp = await client.get(f"{settings.ollama_url}/api/tags", timeout=httpx.Timeout(3.0, connect=0.5))
-            resp.raise_for_status()
-            models = [m["name"] for m in resp.json().get("models", [])]
-        llm = {"ok": True, "url": settings.ollama_url, "models": models}
-    except Exception:
-        llm = {
-            "ok": False,
-            "url": settings.ollama_url,
-            "hint": "Ollama is unreachable. Start the SSH tunnel to the Oracle VM.",
-        }
+    client = make_client()
+    llm = {"ok": await llm_available(client), "provider": client.provider,
+           "naming_model": settings.llm_naming_model, "brief_model": settings.llm_brief_model}
+    if not llm["ok"]:
+        llm["hint"] = client.unavailable_hint
 
     return {"status": "ok" if db["ok"] else "degraded", "db": db, "llm": llm}

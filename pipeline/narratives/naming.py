@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel, Field
 
-from pipeline.llm import OllamaClient
+from pipeline.llm import LLMClient
 
 SYSTEM = """You label clusters of news coverage for a political analyst.
 Use only the headlines and facts provided. Do not add outside knowledge or speculation.
@@ -37,6 +37,6 @@ def build_prompt(topic: str, headlines: list[Headline], keywords: list[str], ent
     )
 
 
-def name_narrative(client: OllamaClient, model: str, topic: str, headlines: list[Headline], keywords: list[str], entities: list[str], first_seen: str, last_seen: str) -> NarrativeName:
+def name_narrative(client: LLMClient, model: str, topic: str, headlines: list[Headline], keywords: list[str], entities: list[str], first_seen: str, last_seen: str) -> NarrativeName:
     prompt = build_prompt(topic, headlines, keywords, entities, first_seen, last_seen)
     return client.generate(model, SYSTEM, prompt, NarrativeName, num_predict=200)

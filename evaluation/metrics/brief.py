@@ -11,7 +11,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from pipeline.llm import OllamaClient
+from pipeline.llm import LLMClient
 
 JUDGE_SYSTEM = """You check whether evidence supports a claim.
 Use only the evidence given. Answer "supported" if the evidence clearly states or directly implies the claim,
@@ -32,13 +32,13 @@ def claims_with_evidence(content: dict) -> list[tuple[str, list[dict]]]:
     return [(claim, [evidence[i] for i in ids if i in evidence]) for claim, ids in items]
 
 
-def judge(client: OllamaClient, model: str, claim: str, evidence: list[dict]) -> Verdict:
+def judge(client: LLMClient, model: str, claim: str, evidence: list[dict]) -> Verdict:
     lines = [f"- {e['title']}" + (f': "{e["excerpt"]}"' if e.get("excerpt") else "") for e in evidence]
     prompt = f"Claim: {claim}\n\nEvidence:\n" + "\n".join(lines)
     return client.generate(model, JUDGE_SYSTEM, prompt, Verdict, num_predict=120, temperature=0.0)
 
 
-def evaluate_brief(content: dict, client: OllamaClient | None, model: str) -> dict:
+def evaluate_brief(content: dict, client: LLMClient | None, model: str) -> dict:
     metrics = content["assessment"]["metrics"]
     result = {"evidence_coverage": metrics.get("evidence_coverage"), "claims": metrics.get("claims")}
     if client is None:

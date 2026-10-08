@@ -29,9 +29,9 @@ function StatusBar() {
         <i className={`dot ${data.db.ok ? 'ok' : 'bad'}`} />
         Database {data.db.ok ? data.db.dialect : 'down'}
       </span>
-      <span title={data.llm.hint}>
+      <span title={data.llm.hint ?? `${data.llm.naming_model} · ${data.llm.brief_model}`}>
         <i className={`dot ${data.llm.ok ? 'ok' : 'bad'}`} />
-        LLM {data.llm.ok ? 'connected' : 'offline'}
+        LLM ({data.llm.provider}) {data.llm.ok ? 'connected' : 'offline'}
       </span>
     </div>
   )

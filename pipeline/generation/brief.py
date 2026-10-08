@@ -7,11 +7,11 @@ and flags claims left without support.
 """
 
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 
 from pydantic import BaseModel, Field
 
-from pipeline.llm import OllamaClient
+from pipeline.llm import LLMClient, estimate_tokens
 
 MAX_NARRATIVES = 8
 EVIDENCE_PER_NARRATIVE = 5
@@ -198,8 +198,37 @@ def render_markdown(topic: str, window: str, narratives: list[NarrativeContext],
     return "\n".join(out) + "\n"
 
 
-def generate(client: OllamaClient, model: str, topic: str, window: str, narratives: list[NarrativeContext]) -> dict:
-    narratives = narratives[:MAX_NARRATIVES]
+def fit_to_budget(topic: str, window: str, narratives: list[NarrativeContext], max_tokens: int | None) -> list[NarrativeContext]:
+    """Shrink the prompt until it fits the provider's token budget, losing the
+    least useful context first: shorter excerpts, then fewer evidence items per
+    narrative, then the smallest narratives. Evidence IDs stay unchanged, so
+    removed items simply can't be cited."""
+    if max_tokens is None:
+        return narratives
+
+    def fits(ns: list[NarrativeContext]) -> bool:
+        return estimate_tokens(SYSTEM + build_prompt(topic, window, ns)) <= max_tokens
+
+    def shrink(ns: list[NarrativeContext], excerpt_chars: int | None, per_narrative: int) -> list[NarrativeContext]:
+        def cut(e: Evidence) -> Evidence:
+            if excerpt_chars is None or not e.excerpt or len(e.excerpt) <= excerpt_chars:
+                return e
+            if excerpt_chars == 0:
+                return replace(e, excerpt=None)
+            return replace(e, excerpt=e.excerpt[:excerpt_chars].rsplit(" ", 1)[0] + "…")
+        return [replace(n, evidence=[cut(e) for e in n.evidence[:per_narrative]]) for n in ns]
+
+    steps = [(None, EVIDENCE_PER_NARRATIVE), (320, EVIDENCE_PER_NARRATIVE), (200, EVIDENCE_PER_NARRATIVE), (120, EVIDENCE_PER_NARRATIVE), (120, 3), (0, 3)]
+    for count in range(len(narratives), 0, -1):  # narratives arrive sorted by volume
+        for excerpt_chars, per_narrative in steps:
+            trimmed = shrink(narratives[:count], excerpt_chars, per_narrative)
+            if fits(trimmed):
+                return trimmed
+    return shrink(narratives[:1], 0, 3)
+
+
+def generate(client: LLMClient, model: str, topic: str, window: str, narratives: list[NarrativeContext]) -> dict:
+    narratives = fit_to_budget(topic, window, narratives[:MAX_NARRATIVES], client.max_prompt_tokens)
     evidence = {e.id: e for n in narratives for e in n.evidence}
     draft = client.generate(model, SYSTEM, build_prompt(topic, window, narratives), BriefDraft, num_predict=1500)
     assessment = validate(draft, evidence, {n.id for n in narratives})

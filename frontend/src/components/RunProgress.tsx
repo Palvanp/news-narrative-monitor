@@ -36,7 +36,7 @@ export default function RunProgress({ run }: { run: Run }) {
       {run.message && <p className="muted small">{run.message}</p>}
       <p className="muted small">
         A run usually takes under a minute. The first run after the server starts also loads the language models,
-        and naming narratives waits on the LLM server when it is connected.
+        and naming narratives waits on the LLM when it is connected.
       </p>
     </div>
   )

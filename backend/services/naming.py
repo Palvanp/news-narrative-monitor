@@ -1,4 +1,4 @@
-"""Stage 4: LLM narrative labels. Skipped (keyword labels kept) if Ollama is unreachable."""
+"""Stage 4: LLM narrative labels. Skipped (keyword labels kept) if the LLM is unreachable."""
 
 import logging
 
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 from backend.config import get_settings
 from backend.models import ArticleNarrative, LLMCache, Monitor, MonitoringRun, Narrative
 from backend.services.progress import Reporter
-from pipeline.llm import LLMError, LLMUnavailable, OllamaClient
+from pipeline.llm import GroqClient, LLMClient, LLMError, LLMUnavailable, OllamaClient
 from pipeline.narratives.naming import Headline, name_narrative
 
 log = logging.getLogger(__name__)
@@ -27,9 +27,15 @@ class DbCache:
         self.session.commit()
 
 
-def llm_client(session: Session) -> OllamaClient:
+def make_client(cache: DbCache | None = None) -> LLMClient:
     settings = get_settings()
-    return OllamaClient(settings.ollama_url, timeout=settings.llm_timeout_seconds, cache=DbCache(session))
+    if settings.llm_provider == "groq":
+        return GroqClient(settings.groq_api_key, settings.groq_url, cache=cache, max_prompt_tokens=settings.groq_max_prompt_tokens)
+    return OllamaClient(settings.ollama_url, timeout=settings.llm_timeout_seconds, cache=cache)
+
+
+def llm_client(session: Session) -> LLMClient:
+    return make_client(DbCache(session))
 
 
 def name_narratives(session: Session, run: MonitoringRun, monitor: Monitor, report: Reporter) -> None:
@@ -47,7 +53,7 @@ def name_narratives(session: Session, run: MonitoringRun, monitor: Monitor, repo
         return
     if not client.available():
         run.stats = {**(run.stats or {}), "llm": "unavailable"}
-        report("naming", 1.0, "LLM unreachable (start the SSH tunnel); kept keyword labels")
+        report("naming", 1.0, f"{client.unavailable_hint} Kept keyword labels.")
         return
 
     named = 0

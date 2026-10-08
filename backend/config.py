@@ -1,9 +1,16 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Default (naming, brief) models per LLM provider; LLM_NAMING_MODEL / LLM_BRIEF_MODEL override.
+DEFAULT_LLM_MODELS = {
+    "groq": ("openai/gpt-oss-20b", "openai/gpt-oss-120b"),
+    "ollama": ("qwen2.5:3b-instruct", "qwen2.5:7b-instruct"),
+}
 
 
 class Settings(BaseSettings):
@@ -11,11 +18,18 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///data/nazar.db"
 
+    # groq (hosted API, default) or ollama (self-hosted server)
+    llm_provider: str = "groq"
+    groq_api_key: str = ""
+    groq_url: str = "https://api.groq.com/openai/v1"
+    # Prompt size cap for Groq. The free tier allows ~8K tokens per minute, counting
+    # the prompt plus the answer budget; long brief prompts are trimmed to fit.
+    groq_max_prompt_tokens: int = 4500
     # 127.0.0.1 rather than "localhost": on Windows "localhost" tries IPv6 first,
     # which adds seconds when nothing is listening.
     ollama_url: str = "http://127.0.0.1:11434"
-    llm_naming_model: str = "qwen2.5:3b-instruct"
-    llm_brief_model: str = "qwen2.5:7b-instruct"
+    llm_naming_model: str = ""
+    llm_brief_model: str = ""
     llm_timeout_seconds: float = 600.0
 
     device: str = "auto"
@@ -38,6 +52,16 @@ class Settings(BaseSettings):
     relevance_min: float = 0.33
 
     data_dir: Path = PROJECT_ROOT / "data"
+
+    @model_validator(mode="after")
+    def _default_llm_models(self) -> "Settings":
+        self.llm_provider = self.llm_provider.strip().lower()
+        if self.llm_provider not in DEFAULT_LLM_MODELS:
+            raise ValueError(f"LLM_PROVIDER must be one of {sorted(DEFAULT_LLM_MODELS)}")
+        naming, brief = DEFAULT_LLM_MODELS[self.llm_provider]
+        self.llm_naming_model = self.llm_naming_model or naming
+        self.llm_brief_model = self.llm_brief_model or brief
+        return self
 
     @property
     def enabled_sources(self) -> list[str]:

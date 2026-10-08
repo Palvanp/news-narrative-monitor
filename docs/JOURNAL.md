@@ -292,6 +292,21 @@ Example summary (a real run):
 - Look at the data before labelling it: the headline repeats would have wasted the labeller's time and skewed the scores.
 - A low silhouette doesn't have to mean bad clusters. Sub-stories of one event naturally overlap, so we pair it with cohesion and manual checks.
 
+## Entry 13: Switching the LLM to Groq
+
+**What we saw**
+- Oracle never had a free ARM machine available: "Out of capacity", night after night. Oracle also halved its free tier in June 2026 (to 2 cores / 12 GB).
+- Other free hosts had also tightened (e.g. Hugging Face's free Docker Spaces), and running the LLM on the laptop would tie it up during testing.
+
+**What we changed**
+- Narrative naming and the brief now use **Groq**, a hosted API that runs open models (gpt-oss-20b for naming, gpt-oss-120b for the brief). Ollama is still supported with one setting (`LLM_PROVIDER=ollama`).
+- Groq's free tier allows about **8,000 tokens per minute**. Our full brief prompt is about 5,600 tokens, and the answer and the model's hidden reasoning need room too, so long prompts are now **trimmed to fit**: evidence excerpts get shorter first, then fewer evidence items per narrative, then the smallest narratives are dropped. On our real run, all 8 narratives and 40 evidence items were kept, with excerpts cut to 120 characters.
+- When Groq says "too many requests", Nazar waits the time Groq asks for and tries again.
+
+**What we learned**
+- Where the LLM runs doesn't change the ML work: the model still only names narratives and writes the brief, and every claim must still cite evidence.
+- Free APIs trade money for limits. Designing for the limit (smaller prompts, waiting politely) is part of the engineering.
+
 ---
 
 ## Still weak / open questions
@@ -337,6 +352,9 @@ Example summary (a real run):
 | **Stance detection** | Telling whether an article supports or opposes a claim (an optional extension). |
 | **LLM (large language model)** | A model that writes text. Nazar uses it only to name narratives and write the brief, always citing sources. |
 | **Ollama** | A program that runs LLMs on a machine and answers requests at a local address. |
+| **API / API key** | A way for one program to use another over the internet. The key is a secret password that identifies your account. |
+| **Token / rate limit** | Models read and write text in small pieces called tokens (roughly ¾ of an English word). A rate limit caps how many tokens or requests you can use per minute. |
+| **Reasoning model** | A model that "thinks" in hidden text before answering. Those hidden tokens count toward its limits. |
 | **SSH tunnel** | An encrypted private connection that forwards a port on your laptop to a port on a remote server. |
 | **GPU / VRAM** | The graphics card, and its own memory; it runs AI models fast. |
 | **RAM / swapping** | The computer's working memory. When it runs out, Windows uses the disk instead (swapping), which is very slow. |

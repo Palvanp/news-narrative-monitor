@@ -27,7 +27,7 @@ export class ApiError extends Error {
 export type Health = {
   status: string
   db: { ok: boolean; dialect?: string; error?: string }
-  llm: { ok: boolean; url: string; models?: string[]; hint?: string }
+  llm: { ok: boolean; provider: string; naming_model: string; brief_model: string; hint?: string }
 }
 
 export type RunStats = {

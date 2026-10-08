@@ -98,8 +98,8 @@ export default function Dashboard() {
 
           {stats.llm === 'unavailable' && (
             <p className="small secondary">
-              Narrative titles below are each narrative's most representative headline: the LLM server was unreachable
-              during this run. Start the SSH tunnel and run again for written narrative statements.
+              Narrative titles below are each narrative's most representative headline: the LLM was unreachable
+              during this run. Check the LLM status at the top and run again for written narrative statements.
             </p>
           )}
 
