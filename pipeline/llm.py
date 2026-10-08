@@ -71,8 +71,12 @@ class LLMClient:
         temperature: float = 0.2,
         num_ctx: int = 8192,
     ) -> T:
-        """Ask for JSON matching `output`'s schema; validate it, retrying once on failure."""
+        """Ask for JSON matching `output`'s schema; validate it, retrying once on failure.
+
+        The retry samples more freely: at temperature 0 the same request tends to
+        fail the same way again (e.g. Groq rejecting malformed JSON with a 400)."""
         payload = self._payload(model, system, prompt, output, num_predict, temperature, num_ctx)
+        retry_payload = self._payload(model, system, prompt, output, num_predict, max(temperature, 0.5), num_ctx)
         key = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
         if self.cache and (hit := self.cache.get(key)) is not None:
@@ -82,9 +86,9 @@ class LLMClient:
                 log.warning("discarding invalid cached LLM response %s", key[:12])
 
         last_error: Exception | None = None
-        for attempt in (1, 2):
+        for attempt, request in ((1, payload), (2, retry_payload)):
             try:
-                content = self._send(payload)
+                content = self._send(request)
                 result = output.model_validate_json(content)
             except (httpx.HTTPError, KeyError, ValueError, ValidationError) as exc:
                 last_error = exc
@@ -207,7 +211,8 @@ class GroqClient(LLMClient):
                 log.info("Groq rate limit reached; waiting %.0f s", delay)
                 time.sleep(delay)
                 continue
-            resp.raise_for_status()
+            if resp.is_error:  # keep Groq's explanation, e.g. "json_validate_failed"
+                raise httpx.HTTPStatusError(f"Groq {resp.status_code}: {resp.text[:400]}", request=resp.request, response=resp)
             return resp.json()["choices"][0]["message"]["content"]
         raise LLMError("Groq rate limit persisted after several waits")
 

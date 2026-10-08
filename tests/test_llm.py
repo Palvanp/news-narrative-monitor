@@ -48,9 +48,11 @@ def test_groq_waits_out_rate_limits(monkeypatch):
     assert waits == [2.0]
 
 
-def test_groq_retries_invalid_json_once(monkeypatch):
-    monkeypatch.setattr(httpx, "post", Recorder(ok("not json"), ok('{"label": "y"}')))
-    assert GroqClient("key").generate("m", "s", "p", Answer).label == "y"
+def test_groq_retries_invalid_json_once_with_more_freedom(monkeypatch):
+    post = Recorder(httpx.Response(400, json={"error": {"code": "json_validate_failed"}}), ok('{"label": "y"}'))
+    monkeypatch.setattr(httpx, "post", post)
+    assert GroqClient("key").generate("m", "s", "p", Answer, temperature=0.0).label == "y"
+    assert [c["json"]["temperature"] for c in post.calls] == [0.0, 0.5]
 
 
 def test_groq_bad_key_is_unavailable(monkeypatch):
@@ -64,7 +66,7 @@ def test_groq_bad_key_is_unavailable(monkeypatch):
 
 def test_models_default_per_provider():
     groq = Settings(_env_file=None, llm_provider="groq")
-    assert (groq.llm_naming_model, groq.llm_brief_model) == ("openai/gpt-oss-20b", "openai/gpt-oss-120b")
+    assert (groq.llm_naming_model, groq.llm_brief_model) == ("openai/gpt-oss-120b", "openai/gpt-oss-120b")
     ollama = Settings(_env_file=None, llm_provider="Ollama", llm_brief_model="custom")
     assert (ollama.llm_naming_model, ollama.llm_brief_model) == ("qwen2.5:3b-instruct", "custom")
     with pytest.raises(ValueError):

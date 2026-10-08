@@ -21,6 +21,9 @@ SYSTEM = """You are an intelligence analyst writing a brief about news coverage 
 Rules:
 - Use only the narratives, metrics and evidence provided. No outside knowledge, no speculation, no predictions or recommendations.
 - Every claim must cite supporting evidence IDs exactly as given, e.g. [E3]. Put the IDs in the claim's evidence_ids list too.
+- Each claim must be fully supported by the evidence it cites. Narrative labels and summaries are context only: if a detail (e.g. a number, an arrest, a court) is not in the cited evidence, leave it out.
+- The executive summary must also cite evidence inline, e.g. "Congress staged protests [E6]".
+- Refer to narratives by what they are about, never by their number; the numbers are internal IDs the reader never sees.
 - Do not invent numbers; the metrics are shown to the reader separately. You may refer to growth or sentiment qualitatively.
 - Distinguish what the coverage says from what is true: write "coverage reports..." rather than asserting events as fact.
 - Write in English, concisely."""
@@ -94,7 +97,7 @@ def build_prompt(topic: str, window: str, narratives: list[NarrativeContext]) ->
         parts.append("")
     parts.append(
         "Write the brief: an executive summary (3-5 sentences, with citations), up to 5 key developments, "
-        "one assessment per narrative (use the narrative numbers above), the most notable shift in coverage "
+        "one assessment per narrative (set narrative_id to the narrative numbers above), the most notable shift in coverage "
         "during the window, and the key entities."
     )
     return "\n".join(parts)

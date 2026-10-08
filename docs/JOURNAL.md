@@ -299,9 +299,13 @@ Example summary (a real run):
 - Other free hosts had also tightened (e.g. Hugging Face's free Docker Spaces), and running the LLM on the laptop would tie it up during testing.
 
 **What we changed**
-- Narrative naming and the brief now use **Groq**, a hosted API that runs open models (gpt-oss-20b for naming, gpt-oss-120b for the brief). Ollama is still supported with one setting (`LLM_PROVIDER=ollama`).
+- Narrative naming and the brief now use **Groq**, a hosted API that runs open models (gpt-oss-120b). Ollama is still supported with one setting (`LLM_PROVIDER=ollama`).
 - Groq's free tier allows about **8,000 tokens per minute**. Our full brief prompt is about 5,600 tokens, and the answer and the model's hidden reasoning need room too, so long prompts are now **trimmed to fit**: evidence excerpts get shorter first, then fewer evidence items per narrative, then the smallest narratives are dropped. On our real run, all 8 narratives and 40 evidence items were kept, with excerpts cut to 120 characters.
 - When Groq says "too many requests", Nazar waits the time Groq asks for and tries again.
+- **First real test (run 4):** all 12 narratives named in 14 seconds, and the brief written in 4 seconds, with all 14 claims citing real evidence. The smaller gpt-oss-20b made factual slips in narrative summaries: it called the Cockroach Janta Party (CJP) "the Chief Election Commissioner", and expanded BLO (Booth Level Officer) as "Ballot List Online". The larger gpt-oss-120b got all three right, so it's now used for both tasks.
+- The first brief referred to "Narrative 26", which is an internal database number, and its executive summary cited no evidence. The prompt now asks for narratives by name and citations in the summary.
+- **Faithfulness check** (an LLM judge reads only the cited evidence for each claim). First brief: 5 supported, 9 partial, 0 unsupported. Claims borrowed details such as "tear gas" from the narrative summaries instead of the cited evidence. After a rule that claims must stand on their cited evidence alone: 7 supported, 4 partial, 3 unsupported. The 3 "unsupported" claims describe our own measured metrics (sentiment, +1200% growth). Those are true, but the judge can't see the metrics, so it can't confirm them. Open question: show the judge the metrics too, or keep metric commentary out of the claims.
+- Groq sometimes rejects a reply with `json_validate_failed` (the model broke the JSON format). Repeating the identical request at temperature 0 failed the same way, so the retry now samples a little more freely.
 
 **What we learned**
 - Where the LLM runs doesn't change the ML work: the model still only names narratives and writes the brief, and every claim must still cite evidence.

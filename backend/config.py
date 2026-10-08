@@ -8,7 +8,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Default (naming, brief) models per LLM provider; LLM_NAMING_MODEL / LLM_BRIEF_MODEL override.
 DEFAULT_LLM_MODELS = {
-    "groq": ("openai/gpt-oss-20b", "openai/gpt-oss-120b"),
+    # gpt-oss-20b made factual slips naming narratives (wrong acronym expansions), so
+    # Groq uses the 120b model for both; 12 naming calls per run are well within limits.
+    "groq": ("openai/gpt-oss-120b", "openai/gpt-oss-120b"),
     "ollama": ("qwen2.5:3b-instruct", "qwen2.5:7b-instruct"),
 }
 
