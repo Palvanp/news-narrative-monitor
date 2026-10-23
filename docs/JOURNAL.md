@@ -315,10 +315,9 @@ Example summary (a real run):
 
 ## Still weak / open questions
 
-- **Hindi sentiment is unreliable.** The sentiment model (trained on tweets) rated many Hindi protest stories as neutral. The evaluation will measure this.
+- **Sentiment is weak on news, and weaker in Hindi.** Measured on public benchmarks ([evaluation](evaluation.md)): the tweet-trained model calls 90% of news sentences neutral, and loses about 13 accuracy points on Hindi versus the same content in English. Read sentiment as relative, not absolute.
 - **Thresholds are provisional:** cohesion 0.52, relevance 0.33, near-duplicate 0.93. All were set from a couple of runs.
 - **RSS covers only recent days** and only the outlets we chose.
-- **Narrative statements and the brief** need the Oracle LLM server ([setup guide](ORACLE_SETUP.md)).
 
 ---
 

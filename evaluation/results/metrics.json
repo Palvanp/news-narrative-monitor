@@ -1,5 +1,370 @@
 {
-  "generated_at": "2026-09-29T12:04:24+00:00",
+  "generated_at": "2026-10-23T16:50:30+00:00",
+  "sentiment_benchmarks": {
+    "model": "cardiffnlp/twitter-xlm-roberta-base-sentiment",
+    "datasets": {
+      "Financial PhraseBank (English financial news)": {
+        "language": "en",
+        "note": "3 classes",
+        "model": {
+          "n": 2264,
+          "accuracy": 0.663,
+          "macro_f1": 0.457,
+          "per_class": {
+            "negative": {
+              "precision": 0.667,
+              "recall": 0.172,
+              "f1": 0.273,
+              "support": 303
+            },
+            "neutral": {
+              "precision": 0.656,
+              "recall": 0.958,
+              "f1": 0.779,
+              "support": 1391
+            },
+            "positive": {
+              "precision": 0.753,
+              "recall": 0.204,
+              "f1": 0.32,
+              "support": 570
+            }
+          },
+          "confusion": {
+            "negative": {
+              "negative": 52,
+              "neutral": 250,
+              "positive": 1
+            },
+            "neutral": {
+              "negative": 21,
+              "neutral": 1333,
+              "positive": 37
+            },
+            "positive": {
+              "negative": 5,
+              "neutral": 449,
+              "positive": 116
+            }
+          }
+        },
+        "majority_baseline": {
+          "always_predicts": "neutral",
+          "n": 2264,
+          "accuracy": 0.614,
+          "macro_f1": 0.254,
+          "per_class": {
+            "negative": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 303
+            },
+            "neutral": {
+              "precision": 0.614,
+              "recall": 1.0,
+              "f1": 0.761,
+              "support": 1391
+            },
+            "positive": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 570
+            }
+          },
+          "confusion": {
+            "negative": {
+              "negative": 0,
+              "neutral": 303,
+              "positive": 0
+            },
+            "neutral": {
+              "negative": 0,
+              "neutral": 1391,
+              "positive": 0
+            },
+            "positive": {
+              "negative": 0,
+              "neutral": 570,
+              "positive": 0
+            }
+          }
+        },
+        "predicted_neutral_share": 0.898
+      },
+      "IndicSentiment, English originals (reviews)": {
+        "language": "en",
+        "note": "positive/negative only: every 'neutral' prediction counts as wrong",
+        "model": {
+          "n": 998,
+          "accuracy": 0.809,
+          "macro_f1": 0.879,
+          "per_class": {
+            "negative": {
+              "precision": 0.964,
+              "recall": 0.807,
+              "f1": 0.878,
+              "support": 492
+            },
+            "neutral": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0
+            },
+            "positive": {
+              "precision": 0.962,
+              "recall": 0.81,
+              "f1": 0.88,
+              "support": 506
+            }
+          },
+          "confusion": {
+            "negative": {
+              "negative": 397,
+              "neutral": 79,
+              "positive": 16
+            },
+            "neutral": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 0
+            },
+            "positive": {
+              "negative": 15,
+              "neutral": 81,
+              "positive": 410
+            }
+          }
+        },
+        "majority_baseline": {
+          "always_predicts": "positive",
+          "n": 998,
+          "accuracy": 0.507,
+          "macro_f1": 0.337,
+          "per_class": {
+            "negative": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 492
+            },
+            "neutral": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0
+            },
+            "positive": {
+              "precision": 0.507,
+              "recall": 1.0,
+              "f1": 0.673,
+              "support": 506
+            }
+          },
+          "confusion": {
+            "negative": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 492
+            },
+            "neutral": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 0
+            },
+            "positive": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 506
+            }
+          }
+        },
+        "predicted_neutral_share": 0.16
+      },
+      "IndicSentiment, Hindi translations (same items)": {
+        "language": "hi",
+        "note": "positive/negative only: every 'neutral' prediction counts as wrong",
+        "model": {
+          "n": 998,
+          "accuracy": 0.675,
+          "macro_f1": 0.782,
+          "per_class": {
+            "negative": {
+              "precision": 0.949,
+              "recall": 0.606,
+              "f1": 0.739,
+              "support": 492
+            },
+            "neutral": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0
+            },
+            "positive": {
+              "precision": 0.931,
+              "recall": 0.743,
+              "f1": 0.826,
+              "support": 506
+            }
+          },
+          "confusion": {
+            "negative": {
+              "negative": 298,
+              "neutral": 166,
+              "positive": 28
+            },
+            "neutral": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 0
+            },
+            "positive": {
+              "negative": 16,
+              "neutral": 114,
+              "positive": 376
+            }
+          }
+        },
+        "majority_baseline": {
+          "always_predicts": "positive",
+          "n": 998,
+          "accuracy": 0.507,
+          "macro_f1": 0.337,
+          "per_class": {
+            "negative": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 492
+            },
+            "neutral": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0
+            },
+            "positive": {
+              "precision": 0.507,
+              "recall": 1.0,
+              "f1": 0.673,
+              "support": 506
+            }
+          },
+          "confusion": {
+            "negative": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 492
+            },
+            "neutral": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 0
+            },
+            "positive": {
+              "negative": 0,
+              "neutral": 0,
+              "positive": 506
+            }
+          }
+        },
+        "predicted_neutral_share": 0.281
+      }
+    }
+  },
+  "ner_benchmarks": {
+    "english_model": "spacy en_core_web_sm",
+    "hindi_model": "cfilt/HiNER-collapsed-muril-base-cased",
+    "datasets": {
+      "CoNLL-2003 test (English news)": {
+        "language": "en",
+        "sentences": 3453,
+        "all": {
+          "precision": 0.653,
+          "recall": 0.542,
+          "f1": 0.592,
+          "support": 4946
+        },
+        "PER": {
+          "precision": 0.716,
+          "recall": 0.588,
+          "f1": 0.646,
+          "support": 1617
+        },
+        "ORG": {
+          "precision": 0.429,
+          "recall": 0.309,
+          "f1": 0.36,
+          "support": 1661
+        },
+        "LOC": {
+          "precision": 0.77,
+          "recall": 0.729,
+          "f1": 0.749,
+          "support": 1668
+        }
+      },
+      "Naamapadam test (Hindi news)": {
+        "language": "hi",
+        "sentences": 867,
+        "all": {
+          "precision": 0.804,
+          "recall": 0.783,
+          "f1": 0.793,
+          "support": 1929
+        },
+        "PER": {
+          "precision": 0.818,
+          "recall": 0.852,
+          "f1": 0.834,
+          "support": 790
+        },
+        "ORG": {
+          "precision": 0.754,
+          "recall": 0.661,
+          "f1": 0.705,
+          "support": 525
+        },
+        "LOC": {
+          "precision": 0.825,
+          "recall": 0.798,
+          "f1": 0.811,
+          "support": 614
+        }
+      },
+      "HiNER test (Hindi, model's own training distribution)": {
+        "language": "hi",
+        "sentences": 21657,
+        "all": {
+          "precision": 0.922,
+          "recall": 0.912,
+          "f1": 0.917,
+          "support": 52918
+        },
+        "PER": {
+          "precision": 0.83,
+          "recall": 0.843,
+          "f1": 0.836,
+          "support": 7495
+        },
+        "ORG": {
+          "precision": 0.808,
+          "recall": 0.795,
+          "f1": 0.801,
+          "support": 5351
+        },
+        "LOC": {
+          "precision": 0.955,
+          "recall": 0.94,
+          "f1": 0.948,
+          "support": 40072
+        }
+      }
+    }
+  },
   "sentiment": null,
   "entities": null,
   "clustering": {
@@ -77,5 +442,454 @@
       ]
     }
   },
-  "briefs": null
+  "briefs": {
+    "brief_3": {
+      "evidence_coverage": 1.0,
+      "claims": 14,
+      "faithfulness": {
+        "supported": 7,
+        "partial": 4,
+        "unsupported": 3,
+        "supported_share": 0.5,
+        "verdicts": [
+          {
+            "claim": "The Cockroach Janta Party threatened a nationwide agitation beginning October 2 unless Chief Election Commissioner Gyanesh Kumar resigns within 24‑48 hours.",
+            "verdict": "supported",
+            "reason": "The evidence includes statements that the Cockroach Janta Party threatened a nationwide agitation starting on October 2 unless Chief Election Commissioner Gyanesh Kumar resigns, with one source specifying a 24‑hour deadline, which aligns with the claim of a 24‑48 hour ultimatum.",
+            "evidence": [
+              "E1",
+              "E2",
+              "E3"
+            ]
+          },
+          {
+            "claim": "Congress staged protests across major cities demanding Gyanesh Kumar’s resignation, with several activists detained and tear gas deployed.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that Congress staged protests in multiple cities demanding Gyanesh Kumar's resignation, but it does not mention activists being detained or tear gas being used.",
+            "evidence": [
+              "E6",
+              "E7",
+              "E8"
+            ]
+          },
+          {
+            "claim": "Petitions were filed in the Supreme Court seeking criminal prosecution of Gyanesh Kumar over Special Intensive Revision decisions made without other commissioners’ consent.",
+            "verdict": "supported",
+            "reason": "The provided evidence explicitly states that a petition has been filed in the Supreme Court seeking criminal prosecution of Chief Election Commissioner Gyanesh Kumar over Special Intensive Revision (SIR) decisions made without the consent of other election commissioners.",
+            "evidence": [
+              "E11",
+              "E12",
+              "E13"
+            ]
+          },
+          {
+            "claim": "Rahul Gandhi repeatedly urged Gyanesh Kumar to resign and become a whistle‑blower, accusing him of facilitating vote theft against the Prime Minister and BJP.",
+            "verdict": "supported",
+            "reason": "The provided sources indicate that Rahul Gandhi repeatedly called on Chief Election Commissioner Gyanesh Kumar to resign and become a 'turn approver' (whistle‑blower), accusing him of facilitating vote theft ('vote chori') against Prime Minister Narendra Modi and the BJP.",
+            "evidence": [
+              "E16",
+              "E17",
+              "E18"
+            ]
+          },
+          {
+            "claim": "Three NDA allies, led by Chirag Paswan, publicly asked the CEC to clarify alleged dissent within the Election Commission regarding the SIR, indicating internal alliance pressure.",
+            "verdict": "supported",
+            "reason": "The evidence explicitly mentions three NDA allies, led by Chirag Paswan, publicly requesting the Chief Election Commissioner to clarify alleged dissent within the Election Commission regarding the SIR, highlighting internal alliance pressure.",
+            "evidence": [
+              "E21",
+              "E22",
+              "E23"
+            ]
+          },
+          {
+            "claim": "The narrative highlighted the CJP’s threat of a mass protest, with coverage showing a neutral‑to‑negative sentiment and growth in article count during the second half of the window.",
+            "verdict": "partial",
+            "reason": "The evidence provides statements about the CJP threatening a nationwide protest, confirming that aspect of the claim. However, it does not contain information about the sentiment of the coverage or any change in article count over time, so those parts of the claim are not supported.",
+            "evidence": [
+              "E1",
+              "E2",
+              "E3"
+            ]
+          },
+          {
+            "claim": "Congress’s nationwide protests were reported with a predominantly negative tone, emphasizing detentions and police action, and also grew in the latter half of the window.",
+            "verdict": "unsupported",
+            "reason": "The provided evidence only describes Congress protests occurring in multiple locations and their demands, but it does not mention a predominantly negative tone, detentions, police action, or an increase in protests in the latter half of the window.",
+            "evidence": [
+              "E6",
+              "E7",
+              "E8"
+            ]
+          },
+          {
+            "claim": "Legal challenges to the CEC’s SIR decisions dominated this narrative, showing a strong negative sentiment and a dramatic increase in coverage (+1200%).",
+            "verdict": "unsupported",
+            "reason": "The evidence only confirms that legal challenges to the CEC's SIR decisions have been filed, but it does not indicate that these challenges dominated the narrative, reflect a strong negative sentiment, or show a 1200% increase in coverage.",
+            "evidence": [
+              "E11",
+              "E12",
+              "E13"
+            ]
+          },
+          {
+            "claim": "Rahul Gandhi’s calls for resignation were covered with negative sentiment, focusing on accusations of vote theft and demands for the CEC to become an approver.",
+            "verdict": "supported",
+            "reason": "The provided headlines explicitly mention Rahul Gandhi accusing the Prime Minister and others of 'vote chori' (vote theft) and demanding that Chief Election Commissioner Gyanesh Kumar resign and 'turn approver', indicating coverage that focuses on these accusations and demands, reflecting a negative sentiment.",
+            "evidence": [
+              "E16",
+              "E17",
+              "E18"
+            ]
+          },
+          {
+            "claim": "The narrative captured internal NDA pressure, with allies seeking clarification on SIR-related dissent, reflecting a balanced sentiment and new coverage in the second half.",
+            "verdict": "supported",
+            "reason": "The evidence explicitly mentions unease within the NDA and three BJP allies seeking clarification from the Election Commission about the SIR issue, confirming internal pressure and the allies' demand for clarification, which aligns with the claim.",
+            "evidence": [
+              "E21",
+              "E22",
+              "E23"
+            ]
+          },
+          {
+            "claim": "Coverage of the parliamentary motion to remove the CEC showed a neutral‑to‑negative tone and a sharp rise (+1000%) as procedural details were explained.",
+            "verdict": "unsupported",
+            "reason": "The provided evidence consists only of article titles and brief excerpts about the parliamentary motion to remove the CEC, without any information about the tone of coverage or a reported 1000% increase in coverage. Therefore, the claim is not supported by the evidence.",
+            "evidence": [
+              "E26",
+              "E27",
+              "E28"
+            ]
+          },
+          {
+            "claim": "The Bengal BJP’s defense of the CEC and call for a Padma award introduced a small positive element amid largely negative coverage of the controversy.",
+            "verdict": "partial",
+            "reason": "The evidence shows that the Bengal BJP chief defended the CEC and called for a Padma award, indicating a positive stance, but it does not provide information about the overall coverage being largely negative, so it only partially supports the claim.",
+            "evidence": [
+              "E31",
+              "E32",
+              "E33"
+            ]
+          },
+          {
+            "claim": "The Election Commission’s defense of new Form‑6 rules and SIR outcomes was reported with overwhelmingly neutral sentiment, focusing on factual explanations.",
+            "verdict": "supported",
+            "reason": "The evidence consists of EC officials providing factual explanations of the new Form‑6 declaration rule and SIR outcomes, without any emotive or biased language, indicating a neutral reporting tone.",
+            "evidence": [
+              "E36",
+              "E37",
+              "E38"
+            ]
+          },
+          {
+            "claim": "Coverage shifted from protest announcements by political parties to heightened legal and parliamentary actions, including Supreme Court petitions and a pending parliamentary motion to remove the CEC.",
+            "verdict": "partial",
+            "reason": "The evidence includes examples of protest announcements by political parties (CJP and Congress protests) and also mentions legal actions such as a Supreme Court petition seeking criminal prosecution of the CEC and discussion of removal procedures. While it shows both types of coverage, it does not explicitly demonstrate a shift from one to the other; it merely presents them together.",
+            "evidence": [
+              "E1",
+              "E6",
+              "E11",
+              "E26"
+            ]
+          }
+        ]
+      }
+    },
+    "brief_2": {
+      "evidence_coverage": 1.0,
+      "claims": 14,
+      "faithfulness": {
+        "supported": 5,
+        "partial": 9,
+        "unsupported": 0,
+        "supported_share": 0.357,
+        "verdicts": [
+          {
+            "claim": "The Cockroach Janta Party threatened a nationwide agitation beginning October 2 unless Chief Election Commissioner Gyanesh Kumar resigns within 24‑48 hours.",
+            "verdict": "supported",
+            "reason": "The evidence includes statements that the Cockroach Janta Party will launch a nationwide protest starting October 2 if Chief Election Commissioner Gyanesh Kumar does not resign, and that they warned he must resign within 24 hours. This directly matches the claim that they threatened a nationwide agitation beginning October 2 unless he resigns within 24‑48 hours.",
+            "evidence": [
+              "E1",
+              "E2"
+            ]
+          },
+          {
+            "claim": "Congress staged protests across major cities demanding Gyanesh Kumar’s resignation, resulting in detentions and tear‑gas deployment.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that Congress staged protests in multiple cities demanding Gyanesh Kumar's resignation, but it does not mention any detentions or tear‑gas deployment.",
+            "evidence": [
+              "E6",
+              "E7",
+              "E8"
+            ]
+          },
+          {
+            "claim": "Supreme Court petitions have been filed seeking criminal prosecution of Gyanesh Kumar over Special Intensive Revision decisions made without other commissioners’ consent.",
+            "verdict": "supported",
+            "reason": "The provided evidence explicitly states that a petition has been filed in the Supreme Court seeking criminal prosecution of Chief Election Commissioner Gyanesh Kumar over Special Intensive Revision (SIR) decisions made without the consent of other election commissioners.",
+            "evidence": [
+              "E11",
+              "E12",
+              "E13"
+            ]
+          },
+          {
+            "claim": "Opposition parties are preparing a parliamentary motion to impeach the CEC, outlining the constitutional requirement of 100 Lok Sabha MPs for removal.",
+            "verdict": "supported",
+            "reason": "The evidence states that the opposition will soon move a motion in both houses of Parliament to remove the Chief Election Commissioner and explains that removal requires the support of 100 Lok Sabha MPs, directly matching the claim.",
+            "evidence": [
+              "E26",
+              "E27",
+              "E28"
+            ]
+          },
+          {
+            "claim": "The Election Commission defended the new Form‑6 rules and the addition of 3.27 crore voters, emphasizing unanimous approval of SIR orders and Supreme Court guidance.",
+            "verdict": "partial",
+            "reason": "The evidence shows that the Election Commission defended the new Form‑6 rules and highlighted that the SIR orders were approved unanimously, supporting that part of the claim. However, there is no mention of Supreme Court guidance, so the claim is only partially supported.",
+            "evidence": [
+              "E36",
+              "E37",
+              "E38"
+            ]
+          },
+          {
+            "claim": "Coverage reports that the Cockroach Janta Party, led by Abhijeet Dipke, issued an ultimatum for the CEC’s resignation and scheduled a mass protest for October 2, framing the CEC’s tenure as responsible for recent BJP electoral losses.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that Abhijeet Dipke and the Cockroach Janta Party set an ultimatum for the CEC's resignation and scheduled a nationwide protest for October 2. However, the provided excerpts do not mention framing the CEC's tenure as responsible for recent BJP electoral losses.",
+            "evidence": [
+              "E1",
+              "E2",
+              "E3"
+            ]
+          },
+          {
+            "claim": "Reports describe Congress organizing nationwide rallies in multiple cities, demanding Gyanesh Kumar’s resignation, with police detaining activists and using tear gas.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that Congress organized protests in multiple cities and demanded Gyanesh Kumar's resignation, but it does not mention police detaining activists or using tear gas.",
+            "evidence": [
+              "E6",
+              "E7",
+              "E8"
+            ]
+          },
+          {
+            "claim": "Media coverage highlights Supreme Court petitions alleging unlawful SIR decisions by the CEC, seeking criminal prosecution, a SIT probe, and an audit of election commission databases.",
+            "verdict": "partial",
+            "reason": "The evidence confirms media reports of Supreme Court petitions that allege unlawful SIR decisions by the CEC and seek criminal prosecution and a declaration that the decisions are illegal. However, it does not mention a SIT probe or an audit of election commission databases, so the claim is only partially supported.",
+            "evidence": [
+              "E11",
+              "E12",
+              "E13"
+            ]
+          },
+          {
+            "claim": "Coverage notes Rahul Gandhi repeatedly calling for the CEC’s resignation, accusing him of facilitating vote theft, while also mentioning BJP rebuttals and ongoing legal challenges.",
+            "verdict": "partial",
+            "reason": "The evidence shows Rahul Gandhi repeatedly calling for the CEC's resignation and accusing him of facilitating vote theft, but it does not include any mention of BJP rebuttals or ongoing legal challenges.",
+            "evidence": [
+              "E16",
+              "E17",
+              "E18"
+            ]
+          },
+          {
+            "claim": "Reports indicate three NDA allies, led by Chirag Paswan, pressing the CEC for clarification on alleged dissent within the Election Commission over the SIR, seeking to calm public confusion.",
+            "verdict": "supported",
+            "reason": "The provided evidence explicitly mentions three NDA allies, including Chirag Paswan, urging the Chief Election Commissioner to clarify alleged dissent within the Election Commission regarding the SIR, with the aim of dispelling public confusion.",
+            "evidence": [
+              "E21",
+              "E22",
+              "E23"
+            ]
+          },
+          {
+            "claim": "Coverage explains the preparation of a parliamentary motion to remove the CEC, outlining the constitutional procedure requiring 100 Lok Sabha MPs and the political debate surrounding a potential first‑ever removal.",
+            "verdict": "supported",
+            "reason": "The provided sources describe the opposition's plan to move a parliamentary motion to remove the Chief Election Commissioner, detail the constitutional requirement of a majority of 100 Lok Sabha MPs, and discuss the political debate about a possible first-ever removal, matching the claim.",
+            "evidence": [
+              "E26",
+              "E27",
+              "E28"
+            ]
+          },
+          {
+            "claim": "Reports show the West Bengal BJP chief publicly defending the CEC and urging that he be awarded a Padma Bhushan, while opposition parties criticize the CEC’s actions.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that the West Bengal BJP chief publicly defended the CEC and urged that he be awarded a Padma Bhushan, but it provides no information about opposition parties criticizing the CEC’s actions.",
+            "evidence": [
+              "E31",
+              "E32",
+              "E33"
+            ]
+          },
+          {
+            "claim": "Coverage presents the Election Commission’s defense of new Form‑6 rules and the addition of 3.27 crore voters, emphasizing unanimous commissioner approval and Supreme Court guidance.",
+            "verdict": "partial",
+            "reason": "The evidence shows that the coverage mentions the addition of 3.27 crore new voters and that the Form‑6 rule was approved unanimously by election commissioners, which supports part of the claim. However, there is no mention of Supreme Court guidance, so the claim is only partially supported.",
+            "evidence": [
+              "E36",
+              "E37",
+              "E38"
+            ]
+          },
+          {
+            "claim": "Coverage shifted from isolated party statements to coordinated legal and parliamentary actions, with a marked increase in articles about Supreme Court petitions and the parliamentary removal motion in the second half of the window.",
+            "verdict": "partial",
+            "reason": "The evidence provides examples of both Supreme Court petitions and a parliamentary motion to remove the CEC, confirming coverage of coordinated legal and parliamentary actions. However, it does not demonstrate a temporal shift or a marked increase in such articles in the second half of the window, so the claim is only partially supported.",
+            "evidence": [
+              "E11",
+              "E12",
+              "E26",
+              "E27"
+            ]
+          }
+        ]
+      }
+    },
+    "brief_1": {
+      "evidence_coverage": 1.0,
+      "claims": 14,
+      "faithfulness": {
+        "supported": 8,
+        "partial": 6,
+        "unsupported": 0,
+        "supported_share": 0.571,
+        "verdicts": [
+          {
+            "claim": "The Cockroach Janta Party announced a nationwide protest for 2 Oct, demanding CEC Gyanesh Kumar’s resignation within 48 hours.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that the Cockroach Janta Party announced a nationwide protest on October 2 if CEC Gyanesh Kumar does not resign, which aligns with the claim about the protest date and the demand for resignation. However, it does not explicitly state a 48‑hour deadline for the resignation, so the claim is only partially supported.",
+            "evidence": [
+              "E1"
+            ]
+          },
+          {
+            "claim": "Congress leaders staged street protests in multiple cities, resulting in police tear‑gas use and detentions.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that Congress leaders staged protests in multiple cities, but it does not mention police tear‑gas use or detentions, so only part of the claim is supported.",
+            "evidence": [
+              "E6"
+            ]
+          },
+          {
+            "claim": "Petitions were filed in the Supreme Court seeking criminal prosecution and a SIT probe into the CEC’s SIR decisions.",
+            "verdict": "partial",
+            "reason": "The evidence shows a Supreme Court plea seeking criminal prosecution of CEC Gyanesh Kumar over SIR decisions, but it does not mention a SIT probe, so only part of the claim is supported.",
+            "evidence": [
+              "E11"
+            ]
+          },
+          {
+            "claim": "Rahul Gandhi publicly called for the CEC to resign and to become an approver, alleging vote theft.",
+            "verdict": "supported",
+            "reason": "The evidence mentions Rahul Gandhi telling the CEC to 'Turn approver' and escalating a 'vote chori' (vote theft) attack, which aligns with publicly calling for the CEC to resign and become an approver while alleging vote theft.",
+            "evidence": [
+              "E16"
+            ]
+          },
+          {
+            "claim": "Bengal BJP leaders defended the CEC and urged that he be awarded a Padma Bhushan.",
+            "verdict": "supported",
+            "reason": "The evidence quotes the Bengal BJP president Samik Bhattacharya defending chief election commissioner Gyanesh Kumar and stating he deserves at least a Padma Bhushan, directly supporting the claim.",
+            "evidence": [
+              "E31"
+            ]
+          },
+          {
+            "claim": "Coverage reports that the CJP, led by Abhijeet Dipke, threatened a nationwide agitation on 2 Oct if the CEC does not resign, reflecting a high‑intensity protest narrative with mixed neutral‑negative sentiment.",
+            "verdict": "partial",
+            "reason": "The evidence confirms that the CJP, led by Abhijeet Dipke, threatened a nationwide agitation on 2 Oct if the CEC does not resign, supporting that part of the claim. However, the evidence does not provide information about the narrative intensity or the mixed neutral‑negative sentiment, so those aspects are not supported.",
+            "evidence": [
+              "E1",
+              "E2",
+              "E3"
+            ]
+          },
+          {
+            "claim": "Reports describe Congress‑led street protests across several states, emphasizing confrontations with police and highlighting opposition mobilization against the CEC.",
+            "verdict": "partial",
+            "reason": "The evidence confirms Congress-led street protests in multiple states and opposition mobilization against the Chief Election Commissioner, but it does not mention confrontations with police.",
+            "evidence": [
+              "E6",
+              "E7",
+              "E8"
+            ]
+          },
+          {
+            "claim": "Media coverage focuses on Supreme Court petitions demanding criminal prosecution and a SIT probe into the CEC’s SIR decisions, indicating a legal challenge narrative with predominantly negative sentiment.",
+            "verdict": "partial",
+            "reason": "The evidence shows media reports about Supreme Court petitions seeking criminal prosecution of the CEC over SIR decisions, supporting the claim of a legal challenge narrative. However, it does not mention a SIT probe, so the claim is only partially supported.",
+            "evidence": [
+              "E11",
+              "E12",
+              "E13"
+            ]
+          },
+          {
+            "claim": "Reports convey Rahul Gandhi’s accusations of vote theft and his call for the CEC’s resignation, framing the controversy as a political attack with strong negative tone.",
+            "verdict": "supported",
+            "reason": "The provided evidence explicitly mentions Rahul Gandhi accusing the Prime Minister and others of vote theft ('vote chori') and demanding the Chief Election Commissioner Gyanesh Kumar resign, using strong language such as 'turn approver' and urging immediate resignation, which aligns with the claim that the reports convey his accusations and frame the controversy as a political attack with a strong negative tone.",
+            "evidence": [
+              "E16",
+              "E17",
+              "E18"
+            ]
+          },
+          {
+            "claim": "Coverage shows NDA allies, including Chirag Paswan and Upendra Kushwaha, seeking clarification from the Election Commission on the SIR dispute, reflecting intra‑alliance tension.",
+            "verdict": "supported",
+            "reason": "The provided articles explicitly state that NDA allies Chirag Paswan and Upendra Kushwaha are asking the Election Commission for clarification on the SIR issue, and they describe this as causing unease within the alliance, indicating intra‑alliance tension.",
+            "evidence": [
+              "E21",
+              "E22",
+              "E23"
+            ]
+          },
+          {
+            "claim": "Reports detail the opposition’s parliamentary motion to remove the CEC, outlining procedural requirements and indicating a legislative strategy against the commissioner.",
+            "verdict": "supported",
+            "reason": "The evidence mentions that the opposition plans to move a motion in both houses of Parliament to remove the Chief Election Commissioner, discusses the procedural requirements such as needing 100 Lok Sabha MPs and Section 16 protection, and frames it as a legislative strategy against the commissioner.",
+            "evidence": [
+              "E26",
+              "E27",
+              "E28"
+            ]
+          },
+          {
+            "claim": "BJP leaders in West Bengal publicly defended the CEC and advocated for a Padma Bhushan award, presenting a counter‑narrative that praises the commissioner amid resignation calls.",
+            "verdict": "supported",
+            "reason": "The provided sources quote West Bengal BJP president Samik Bhattacharya publicly supporting Chief Election Commissioner Gyanesh Kumar and calling for him to receive a Padma Bhushan, which aligns with the claim of BJP leaders defending the CEC and advocating the award amid resignation demands.",
+            "evidence": [
+              "E31",
+              "E32",
+              "E33"
+            ]
+          },
+          {
+            "claim": "The Election Commission clarified the Form‑6 changes that added millions of young voters, emphasizing procedural unanimity and attempting to defuse the voter‑list controversy.",
+            "verdict": "supported",
+            "reason": "The evidence cites the Election Commission stating that millions of young voters (2.37 crore and 3.27 crore) were added via Form‑6 changes, and notes that the SIR orders related to Form‑6 were approved unanimously, indicating an effort to clarify the change and defuse the controversy.",
+            "evidence": [
+              "E36",
+              "E37",
+              "E38"
+            ]
+          },
+          {
+            "claim": "Coverage shifted from protest‑centric narratives (CJP and Congress protests) in the first half to institution‑centric narratives (Supreme Court petitions, parliamentary removal motion, and EC clarification) in the second half of the window.",
+            "verdict": "supported",
+            "reason": "The evidence lists protest-focused coverage (CJP protest and Congress protests) followed by institution-focused coverage (Supreme Court petition and parliamentary motion), matching the claimed shift from protest-centric to institution-centric narratives.",
+            "evidence": [
+              "E1",
+              "E6",
+              "E11",
+              "E27"
+            ]
+          }
+        ]
+      }
+    }
+  }
 }

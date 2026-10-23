@@ -2,8 +2,11 @@
 
     uv run python -m evaluation.run_eval
 
-Sections run when their inputs exist:
-- sentiment / entities: need labels in evaluation/datasets/labels.csv
+Sections:
+- benchmarks: sentiment and NER on public human-labelled datasets (evaluation/benchmarks.py),
+  downloaded on first use; --skip-benchmarks turns them off
+- sentiment / entities on our own articles: optional, only if evaluation/datasets/labels.csv
+  has labels filled in
 - clustering: needs a completed run with narratives in the database
 - brief: needs a generated brief (faithfulness also needs the LLM)
 """
@@ -147,11 +150,39 @@ def eval_briefs(use_llm: bool) -> dict | None:
         return {f"brief_{b.id}": evaluate_brief(b.content, client, get_settings().llm_brief_model) for b in briefs[:3]}
 
 
+def render_benchmarks(results: dict) -> list[str]:
+    out = []
+    sb = results.get("sentiment_benchmarks")
+    out.append("## Sentiment on public benchmarks")
+    if sb:
+        out += [f"Model: `{sb['model']}`", "", "| Dataset | Lang | n | Accuracy | Macro-F1 | Majority baseline acc / F1 | Predicted neutral |", "|---|---|---|---|---|---|---|"]
+        for name, d in sb["datasets"].items():
+            m, b = d["model"], d["majority_baseline"]
+            out.append(f"| {name} | {d['language']} | {m['n']} | {m['accuracy']} | {m['macro_f1']} | {b['accuracy']} / {b['macro_f1']} | {d['predicted_neutral_share']} |")
+    else:
+        out.append("_Not run._")
+    out.append("")
+
+    nb = results.get("ner_benchmarks")
+    out.append("## Entities on public benchmarks (entity-level, exact span + type)")
+    if nb:
+        out += [f"Models: English `{nb['english_model']}`, Hindi `{nb['hindi_model']}`", "",
+                "| Dataset | Lang | Sentences | P / R / F1 | PER F1 | ORG F1 | LOC F1 |", "|---|---|---|---|---|---|---|"]
+        for name, d in nb["datasets"].items():
+            a = d["all"]
+            out.append(f"| {name} | {d['language']} | {d['sentences']} | {a['precision']} / {a['recall']} / {a['f1']} | {d['PER']['f1']} | {d['ORG']['f1']} | {d['LOC']['f1']} |")
+    else:
+        out.append("_Not run._")
+    out.append("")
+    return out
+
+
 def render_report(results: dict) -> str:
     out = [f"# Nazar evaluation report", f"_Generated {results['generated_at']}_", ""]
+    out += render_benchmarks(results)
 
     s = results.get("sentiment")
-    out.append("## Sentiment")
+    out.append("## Sentiment (our articles, hand labels)")
     if s:
         out += [f"Model: `{s['model']}`", "", "| Language | n | Accuracy | Macro-F1 | Majority baseline acc / F1 |", "|---|---|---|---|---|"]
         for lang in ("all", "en", "hi"):
@@ -159,11 +190,11 @@ def render_report(results: dict) -> str:
                 m, b = s[lang]["model"], s[lang]["majority_baseline"]
                 out.append(f"| {lang} | {m['n']} | {m['accuracy']} | {m['macro_f1']} | {b['accuracy']} / {b['macro_f1']} (always *{b['always_predicts']}*) |")
     else:
-        out.append("_Not run: no sentiment labels yet._")
+        out.append("_Optional, not run: no hand labels in labels.csv._")
     out.append("")
 
     e = results.get("entities")
-    out.append("## Entities (people, organisations, places)")
+    out.append("## Entities (our articles, hand labels)")
     if e:
         out += ["| Language | Articles | Strict P / R / F1 | Lenient P / R / F1 |", "|---|---|---|---|"]
         for lang in ("all", "en", "hi"):
@@ -171,7 +202,7 @@ def render_report(results: dict) -> str:
                 st, le = e[lang]["strict"], e[lang]["lenient"]
                 out.append(f"| {lang} | {e[lang]['articles']} | {st['precision']} / {st['recall']} / {st['f1']} | {le['precision']} / {le['recall']} / {le['f1']} |")
     else:
-        out.append("_Not run: no entity labels yet._")
+        out.append("_Optional, not run: no hand labels in labels.csv._")
     out.append("")
 
     c = results.get("clustering")
@@ -204,11 +235,18 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", type=int, default=None, help="run to evaluate clustering on (default: latest with narratives)")
     parser.add_argument("--no-llm", action="store_true", help="skip the LLM faithfulness judge")
+    parser.add_argument("--skip-benchmarks", action="store_true", help="skip the public-benchmark sentiment/NER evaluation")
+    parser.add_argument("--benchmark-limit", type=int, default=None, help="evaluate at most this many examples per benchmark")
     args = parser.parse_args()
     setup_logging()
 
     rows = load_labelled() if (DATASETS / "labels.csv").exists() else []
     results = {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    if not args.skip_benchmarks:
+        from evaluation.benchmarks import eval_ner_benchmarks, eval_sentiment_benchmarks
+
+        results["sentiment_benchmarks"] = eval_sentiment_benchmarks(args.benchmark_limit)
+        results["ner_benchmarks"] = eval_ner_benchmarks(args.benchmark_limit)
     results["sentiment"] = eval_sentiment(rows) if rows else None
     results["entities"] = eval_entities(rows) if rows else None
     results["clustering"] = eval_clustering(args.run_id)
