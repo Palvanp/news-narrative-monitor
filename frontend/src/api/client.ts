@@ -163,4 +163,13 @@ export type Brief = {
   } | null
 }
 
+export type TrendingTopic = { topic: string; en: number; hi: number; headlines: string[] }
+
+export type Trending = {
+  window_hours: number
+  generated_at: string
+  topics: TrendingTopic[]
+  error: string | null
+}
+
 export const LANGUAGE_NAMES: Record<string, string> = { en: 'English', hi: 'Hindi' }

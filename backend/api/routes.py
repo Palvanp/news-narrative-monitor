@@ -15,6 +15,7 @@ from backend.schemas import (
     RunOut,
     Timeline,
     TimelineSeries,
+    Trending,
 )
 from backend.services import queries
 from backend.services.runs import create_run
@@ -89,6 +90,14 @@ def rerun_monitor(monitor_id: int, background: BackgroundTasks, session: Session
     if active and active.status in ("pending", "running"):
         raise HTTPException(409, f"Run {active.id} is still {active.status}")
     return _new_run(session, monitor, background)
+
+
+@router.get("/trending", response_model=Trending)
+def trending():
+    """Topics with enough current coverage in English and Hindi to form narratives."""
+    from backend.services.trending import get_trending
+
+    return get_trending()
 
 
 @router.get("/runs/{run_id}", response_model=RunOut)

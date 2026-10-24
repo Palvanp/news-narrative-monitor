@@ -48,3 +48,16 @@ def test_multi_word_names_become_one_bilingual_concept():
     assert m.matches("Rahul Gandhi attacks CEC Gyanesh Kumar over voter list")
     assert m.matches("चुनाव आयोग ने एसआईआर पर दी सफाई")
     assert not m.matches("Akshay Kumar film breaks records")
+
+
+def test_trending_keeps_bilingual_specific_topics_and_drops_broad_ones():
+    from pipeline.ingestion.trending import score_topics
+
+    story = [("en", f"Rahul Gandhi rally speech part {i}", "") for i in range(20)]
+    story += [("hi", f"राहुल गांधी की रैली भाग {i}", "") for i in range(10)]
+    english_only = [("en", f"Tiger Shroff film news {i}", "") for i in range(30)]
+    broad = [("en", f"BJP statement on issue {i}", "") for i in range(60)]
+    filler = [("en", f"weather report {i}", "") for i in range(800)]
+    topics = {s.topic: s for s in score_topics(story + english_only + broad + filler)}
+    assert set(topics) == {"Rahul Gandhi"}
+    assert (topics["Rahul Gandhi"].en, topics["Rahul Gandhi"].hi) == (20, 10)

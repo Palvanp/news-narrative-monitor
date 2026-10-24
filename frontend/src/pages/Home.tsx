@@ -1,8 +1,50 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api, type Monitor } from '../api/client'
+import { api, type Monitor, type Trending, type TrendingTopic } from '../api/client'
 import { shortTime } from '../components/format'
+
+function TrendingTopics({ onPick }: { onPick: (t: TrendingTopic, hours: number) => void }) {
+  const trending = useQuery({
+    queryKey: ['trending'],
+    queryFn: () => api<Trending>('/trending'),
+    staleTime: 10 * 60 * 1000,
+  })
+  const data = trending.data
+  return (
+    <div className="panel stack">
+      <div className="spread">
+        <h2>In the news now</h2>
+        {data && <span className="muted small">English + Hindi coverage, last {Math.round(data.window_hours / 24)} days</span>}
+      </div>
+      {trending.isLoading && <p className="muted small">Reading today's headlines from the news feeds…</p>}
+      {trending.error && <p className="muted small">Couldn't load trending topics: {trending.error.message}</p>}
+      {data && data.topics.length === 0 && (
+        <p className="muted small">
+          {data.error ? `Couldn't read the feeds (${data.error}).` : 'No story has enough English and Hindi coverage right now.'}
+        </p>
+      )}
+      {!!data?.topics.length && (
+        <div className="trends">
+          {data.topics.map((t) => (
+            <button type="button" className="trend" key={t.topic} onClick={() => onPick(t, data.window_hours)}>
+              <span className="trend-topic">{t.topic}</span>
+              <span className="split" aria-hidden>
+                <span style={{ flex: t.en, background: 'var(--lang-en)' }} />
+                <span style={{ flex: t.hi, background: 'var(--lang-hi)' }} />
+              </span>
+              <span className="small secondary tabular">
+                {t.en + t.hi} articles · {t.en} English · {t.hi} Hindi
+              </span>
+              {t.headlines[0] && <span className="small muted trend-headline">“{t.headlines[0]}”</span>}
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="muted small">Pick a story to fill in the form. A topic needs roughly 25+ articles for narratives to form.</p>
+    </div>
+  )
+}
 
 const RANGES = [
   { hours: 6, label: 'Last 6 hours' },
@@ -14,7 +56,7 @@ const RANGES = [
 export default function Home() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [topic, setTopic] = useState('India-US trade negotiations')
+  const [topic, setTopic] = useState('')
   const [hindiKeywords, setHindiKeywords] = useState('')
   const [hours, setHours] = useState(24)
   const [languages, setLanguages] = useState<string[]>(['en', 'hi'])
@@ -32,6 +74,15 @@ export default function Home() {
     },
   })
 
+  const topicInput = useRef<HTMLInputElement>(null)
+  const pick = (t: TrendingTopic, windowHours: number) => {
+    setTopic(t.topic)
+    setHours(windowHours)
+    setLanguages(['en', 'hi'])
+    setHindiKeywords('')
+    topicInput.current?.focus()
+    topicInput.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
   const toggle = (lang: string) =>
     setLanguages((cur) => (cur.includes(lang) ? cur.filter((l) => l !== lang) : [...cur, lang]))
 
@@ -42,12 +93,21 @@ export default function Home() {
 
   return (
     <div className="stack">
+      <TrendingTopics onPick={pick} />
       <form className="panel stack" onSubmit={submit}>
         <h2>Create a monitor</h2>
         <div className="form-grid">
           <label>
             Topic / event
-            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} required minLength={3} />
+            <input
+              ref={topicInput}
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="Pick a story above, or type one in the news this week"
+              required
+              minLength={3}
+            />
           </label>
           <label>
             Time range

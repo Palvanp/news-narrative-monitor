@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     # Keep the NLP models loaded between runs (faster repeat runs; holds ~2.5 GB of
     # GPU memory and some RAM while the server runs). False frees them after each run.
     keep_models_loaded: bool = True
+    # Compute the home page's trending topics when the API starts (reads all feeds once).
+    trending_warm_up: bool = True
 
     # comma-separated: rss, gdelt. GDELT's API rate-limits heavily, so it is off by default.
     news_sources: str = "rss"

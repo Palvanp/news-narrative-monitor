@@ -195,3 +195,9 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 .brief li { margin: 0.3em 0; }
 .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
 @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+.trends { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.trend { display: flex; flex-direction: column; gap: 6px; text-align: left; background: var(--surface-raised); color: var(--text-primary); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.trend:hover, .trend:focus-visible { border-color: var(--accent); }
+.trend-topic { font-weight: 600; }
+.trend-headline { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

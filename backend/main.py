@@ -18,6 +18,10 @@ setup_logging()
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    if get_settings().trending_warm_up:
+        from backend.services.trending import warm_up
+
+        warm_up()
     yield
 
 

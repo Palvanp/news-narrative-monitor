@@ -122,3 +122,17 @@ class BriefOut(BaseModel):
     content: dict | None
     markdown: str | None
     created_at: datetime
+
+
+class TrendingTopic(BaseModel):
+    topic: str
+    en: int
+    hi: int
+    headlines: list[str]
+
+
+class Trending(BaseModel):
+    window_hours: int
+    generated_at: datetime
+    topics: list[TrendingTopic]
+    error: str | None = None
