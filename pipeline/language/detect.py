@@ -1,4 +1,4 @@
-"""Language identification with lingua, cross-checked against GDELT's label.
+"""Language identification with lingua, cross-checked against the feed's declared language.
 
 The detector includes other Indic languages as "confusers": a Marathi article
 in Devanagari must not be forced into Hindi just because Hindi is the only
@@ -21,7 +21,7 @@ CANDIDATES = [
     Language.TELUGU,
 ]
 
-# Sources declare language as a name (GDELT: "Hindi") or a code (feeds: "hi").
+# Sources declare language as a code ("hi") or a name ("Hindi").
 HINT_TO_CODE = {"english": "en", "hindi": "hi", "marathi": "mr", "bengali": "bn", "urdu": "ur"}
 
 # Below this much text, lingua is unreliable and the source's declared language wins on disagreement.

@@ -365,8 +365,6 @@
       }
     }
   },
-  "sentiment": null,
-  "entities": null,
   "clustering": {
     "run_id": 4,
     "topic": "Election Commission CEC Gyanesh Kumar SIR controversy",

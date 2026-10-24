@@ -6,5 +6,5 @@ def test_detects_english_and_hindi():
     assert resolve_language("भारत और अमेरिका के बीच व्यापार वार्ता फिर से शुरू हुई", None, None) == "hi"
 
 
-def test_gdelt_label_wins_on_short_disagreeing_text():
+def test_declared_language_wins_on_short_disagreeing_text():
     assert resolve_language("GST", None, "Hindi") == "hi"

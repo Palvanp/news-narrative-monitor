@@ -69,16 +69,18 @@ export default function BriefView() {
 
   return (
     <div className="stack">
-      <div className="spread">
+      <div className="page-head">
         <div>
-          <Link to={`/monitors/${id}`} className="small">
+          <Link to={`/monitors/${id}`} className="back">
             ← {monitor.data?.topic ?? 'Monitor'}
           </Link>
-          <div className="eyebrow" style={{ marginTop: 8 }}>
-            Intelligence brief
-          </div>
+          <div className="eyebrow">Intelligence brief</div>
           <h1>{monitor.data?.topic}</h1>
-          {b?.content && <div className="muted small">{b.content.window} · generated {shortTime(b.created_at)} by {b.model}</div>}
+          {b?.content && (
+            <div className="meta muted small">
+              {b.content.window} · generated {shortTime(b.created_at)} by {b.model}
+            </div>
+          )}
         </div>
         <div className="row">
           {b?.markdown && (
@@ -86,7 +88,7 @@ export default function BriefView() {
               Export Markdown
             </button>
           )}
-          <button onClick={() => generate.mutate()} disabled={busy}>
+          <button className={b ? 'dark' : ''} onClick={() => generate.mutate()} disabled={busy}>
             {busy ? 'Generating…' : b ? 'Regenerate' : 'Generate brief'}
           </button>
         </div>
@@ -94,28 +96,57 @@ export default function BriefView() {
 
       {generate.error && <p className="error">{generate.error.message}</p>}
       {busy && (
-        <div className="panel">
-          <p className="secondary">
+        <div className="card">
+          <div className="skeleton" style={{ minHeight: 8, borderRadius: 999 }} />
+          <p className="secondary" style={{ margin: 0 }}>
             Writing the brief. This usually takes under a minute, longer if the LLM's rate limit is reached.
           </p>
         </div>
       )}
       {b?.status === 'failed' && (
-        <div className="panel">
+        <div className="card">
           <h2 className="error">Brief generation failed</h2>
-          <p>{b.error}</p>
+          <p style={{ margin: 0 }}>{b.error}</p>
         </div>
       )}
-      {b == null && !busy && !brief.isLoading && <p className="muted">No brief yet. Generate one from the latest completed run.</p>}
+      {b == null && !busy && !brief.isLoading && (
+        <div className="card soft empty">
+          <h2>No brief yet</h2>
+          <p>Generate one from the latest completed run. Every claim it keeps will cite an article.</p>
+        </div>
+      )}
+
+      {a && b?.content && (
+        <div className="bento">
+          <div className="card accent span-4">
+            <span className="small">Claims backed by evidence</span>
+            <span className="big-num">
+              {a.metrics.supported_claims}
+              <span style={{ opacity: 0.7, fontWeight: 400 }}>/{a.metrics.claims}</span>
+            </span>
+            <span className="small secondary">claims in the brief that cite at least one article</span>
+          </div>
+          <div className="card span-4">
+            <span className="small secondary">Evidence articles</span>
+            <span className="big-num">{Object.keys(b.content.evidence).length}</span>
+            <span className="stat-label">available to the LLM to cite, quoted on the right</span>
+          </div>
+          <div className="card span-4">
+            <span className="small secondary">Removed statements</span>
+            <span className="big-num">{a.unsupported_claims.length}</span>
+            <span className="stat-label">had no supporting article, so they were struck out</span>
+          </div>
+        </div>
+      )}
 
       {narratives.data && narratives.data.length > 0 && (
-        <div className="panel">
-          <div className="spread">
+        <div className="card">
+          <div className="card-head">
             <h2>Observed metrics</h2>
             <span className="badge">Measured, not generated</span>
           </div>
           <div className="table-scroll">
-            <table className="data" style={{ marginTop: 8 }}>
+            <table className="data">
               <thead>
                 <tr>
                   <th>Narrative</th>
@@ -151,14 +182,12 @@ export default function BriefView() {
 
       {a && b?.content && (
         <div className="two-col">
-          <div className="panel stack brief">
+          <article className="card brief" style={{ padding: 28 }}>
             <div className="spread">
               <h2>Assessment</h2>
-              <span className="badge">
-                Interpretation · {a.metrics.supported_claims}/{a.metrics.claims} claims cited
-              </span>
+              <span className="badge">Interpretation · written by the LLM</span>
             </div>
-            <p>{withCitations(a.executive_summary)}</p>
+            <p className="lead">{withCitations(a.executive_summary)}</p>
 
             {a.key_developments.length > 0 && (
               <>
@@ -193,34 +222,36 @@ export default function BriefView() {
             )}
 
             {a.unsupported_claims.length > 0 && (
-              <>
-                <h3 className="muted">Removed: statements without supporting evidence</h3>
-                <ul className="muted">
+              <div className="removed">
+                <div className="small" style={{ fontWeight: 600, marginBottom: 4 }}>
+                  Removed: statements without supporting evidence
+                </div>
+                <ul className="muted" style={{ margin: 0 }}>
                   {a.unsupported_claims.map((c, i) => (
                     <li key={i}>
                       <s>{c}</s>
                     </li>
                   ))}
                 </ul>
-              </>
+              </div>
             )}
-          </div>
+          </article>
 
-          <div className="panel stack">
+          <div className="card" style={{ position: 'sticky', top: 16, maxHeight: 'calc(100vh - 32px)', overflowY: 'auto' }}>
             <h2>Evidence</h2>
             <div className="evidence">
               {Object.values(b.content.evidence).map((e) => (
                 <div key={e.id} id={e.id} className="evidence-item rep">
                   <div className="small">
-                    <b>{e.id}</b>{' '}
-                    <a href={e.url} target="_blank" rel="noreferrer">
+                    <span className="evidence-id">{e.id}</span>
+                    <a className="title" href={e.url} target="_blank" rel="noreferrer" lang={e.language ?? undefined}>
                       {e.title}
                     </a>
                   </div>
-                  <div className="muted small">
+                  <div className="muted tiny" style={{ marginTop: 4 }}>
                     {e.source} · {LANGUAGE_NAMES[e.language ?? ''] ?? e.language} · {shortTime(e.published_at)}
                   </div>
-                  {e.excerpt && <blockquote>“{e.excerpt}”</blockquote>}
+                  {e.excerpt && <blockquote lang={e.language ?? undefined}>“{e.excerpt}”</blockquote>}
                 </div>
               ))}
             </div>

@@ -19,12 +19,6 @@ Models: English `spacy en_core_web_sm`, Hindi `cfilt/HiNER-collapsed-muril-base-
 | Naamapadam test (Hindi news) | hi | 867 | 0.804 / 0.783 / 0.793 | 0.834 | 0.705 | 0.811 |
 | HiNER test (Hindi, model's own training distribution) | hi | 21657 | 0.922 / 0.912 / 0.917 | 0.836 | 0.801 | 0.948 |
 
-## Sentiment (our articles, hand labels)
-_Optional, not run: no hand labels in labels.csv._
-
-## Entities (our articles, hand labels)
-_Optional, not run: no hand labels in labels.csv._
-
 ## Narrative clustering
 Run 4 (Election Commission CEC Gyanesh Kumar SIR controversy), 152 relevant articles.
 

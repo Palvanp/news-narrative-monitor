@@ -1,6 +1,4 @@
 from evaluation.metrics.classification import classification_report, majority_baseline
-from evaluation.metrics.entities import parse_gold, score_sets
-from pipeline.entities.extractor import Gazetteer
 
 LABELS = ["negative", "neutral", "positive"]
 
@@ -16,22 +14,6 @@ def test_classification_report_and_baseline():
     assert r["confusion"]["positive"]["negative"] == 1
     b = majority_baseline(gold, LABELS)
     assert b["always_predicts"] == "negative" and b["accuracy"] == 0.5
-
-
-def test_gold_entities_canonicalize_across_languages_and_blank_means_unlabelled():
-    gaz = Gazetteer()
-    assert parse_gold("राहुल गांधी; Election Commission; Delhi|LOC", gaz) == {"rahul gandhi", "election commission of india", "delhi"}
-    assert parse_gold("none", gaz) == set()
-    assert parse_gold("  ", gaz) is None
-
-
-def test_entity_scores_strict_and_lenient():
-    gold = [{"rahul gandhi", "sukhbir singh sandhu"}, set()]
-    pred = [{"rahul gandhi", "sukhbir singh"}, {"delhi"}]
-    strict = score_sets(gold, pred)
-    assert (strict["tp"], strict["fp"], strict["fn"]) == (1, 2, 1)
-    lenient = score_sets(gold, pred, lenient=True)
-    assert (lenient["tp"], lenient["fp"], lenient["fn"]) == (2, 1, 0)
 
 
 def test_bio_spans_follow_conlleval_and_skip_misc():

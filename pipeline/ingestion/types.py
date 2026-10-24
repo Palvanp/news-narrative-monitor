@@ -10,7 +10,7 @@ class RawArticle:
     title: str
     domain: str
     seen_at: datetime
-    origin: str = "unknown"  # rss|gdelt
+    origin: str = "unknown"  # rss
     language_hint: str | None = None  # the source's declared language: a code ("hi") or name ("Hindi")
     source_country: str | None = None
     summary: str | None = None

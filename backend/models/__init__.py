@@ -79,7 +79,7 @@ class Article(Base):
     body_status: Mapped[str] = mapped_column(String(20), default="pending")  # pending|ok|summary|failed
     language: Mapped[str | None] = mapped_column(String(8))
     declared_language: Mapped[str | None] = mapped_column(String(40))
-    origin: Mapped[str | None] = mapped_column(String(20))  # rss|gdelt
+    origin: Mapped[str | None] = mapped_column(String(20))  # rss
     published_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
     fetched_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     duplicate_of: Mapped[int | None] = mapped_column(ForeignKey("articles.id"))

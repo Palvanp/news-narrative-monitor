@@ -1,14 +1,33 @@
 import { LANGUAGE_NAMES } from '../api/client'
 import { pct } from './format'
 
+export function EyeMark({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M3 16c4-6.5 8.4-9 13-9s9 2.5 13 9c-4 6.5-8.4 9-13 9S7 22.5 3 16z" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="16" cy="16" r="5.2" fill="none" stroke="var(--ink)" strokeWidth="2" />
+      <circle cx="16" cy="16" r="2.6" fill="var(--red)" />
+    </svg>
+  )
+}
+
+export function Arrow({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4.5 11.5l7-7M5.5 4.5h6v6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export function Growth({ growth, isNew }: { growth: number | null; isNew: boolean }) {
   if (isNew) return <span className="badge new">New this window</span>
   if (growth == null) return <span className="muted small">growth n/a</span>
-  const cls = growth > 0 ? 'up' : growth < 0 ? 'down' : ''
-  const arrow = growth > 0 ? '↑' : growth < 0 ? '↓' : '→'
+  const cls = growth > 0 ? 'up' : growth < 0 ? 'down' : 'flat'
+  const arrow = growth > 0 ? '▲' : growth < 0 ? '▼' : '→'
   return (
     <span className={`growth ${cls}`} title="Articles in the second half of the window vs the first half">
-      {arrow} {growth > 0 ? '+' : ''}
+      <span aria-hidden style={{ fontSize: '0.65em' }}>{arrow}</span>
+      {growth > 0 ? '+' : ''}
       {growth.toFixed(0)}%
     </span>
   )

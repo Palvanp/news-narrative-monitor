@@ -10,21 +10,13 @@ How Nazar's components are measured, and the results so far. The raw numbers liv
 | Entities | entity-level precision / recall / F1 (exact span + type), per type | public benchmarks: CoNLL-2003 (EN news), Naamapadam (HI news), HiNER (HI, in-domain reference) | ✅ results below |
 | Narrative clustering | silhouette, bilingual share, cohesion, vs a KMeans baseline and an ablation without language centering | a completed run | ✅ results below |
 | Brief | evidence coverage (claims citing real sources); faithfulness via an LLM judge | generated briefs + the LLM | ✅ results below |
-| Sentiment / entities on our own articles | as above, on 150 articles from real runs | hand labels (`labels.csv`) | optional, not done |
 
-**Why public benchmarks instead of hand labels.** Labels made by the developer for their own system are slow to make and easy to doubt. Public test sets were labelled by other people, are used in published work, and are reproducible: `run_eval` downloads them on first use (into `data/benchmarks/`). The cost is **domain shift**: none of them is political news from Indian outlets, so each one stands in for part of our setting, as described per result below. The labelling set and guide are kept if someone wants in-domain numbers later.
+**Why public benchmarks instead of hand labels.** Labels made by the developer for their own system are slow to make and easy to doubt. Public test sets were labelled by other people, are used in published work, and are reproducible: `run_eval` downloads them on first use (into `data/benchmarks/`). The cost is **domain shift**: none of them is political news from Indian outlets, so each one stands in for part of our setting, as described per result below.
 
 **Design choices**
 - **Benchmarks run the pipeline's own models and thresholds** (the same `MIN_NER_SCORE`, the same spaCy/HiNER setup), not a cleaned-up variant.
 - **NER uses the standard CoNLL metric**: an entity counts only if both its exact span and its type (person / organisation / place) match. CoNLL's MISC class has no equivalent in Nazar and isn't scored.
-- **The labelling set is self-contained** (`evaluation/datasets/eval_articles.jsonl`): 150 unique articles from real runs, 75 English and 75 Hindi, sampled with a fixed seed.
-- **Labeller and models see the same short text** (headline + opening ~400 characters), so a model isn't penalised for names the labeller never saw.
-- **Model predictions are hidden during labelling**, to avoid anchoring.
-- **Entities are compared after canonicalizing both sides** with the gazetteer, so राहुल गांधी = Rahul Gandhi. Only people, organisations and places are scored.
-- **"Lenient" name matching** counts containment ("Sukhbir Singh" vs "Sukhbir Singh Sandhu") as a match; strict doesn't. Both are reported.
 - **The brief's LLM judge is itself an LLM**, which is a known weakness. Its verdicts are exported so a human can spot-check them.
-
-How to label: [evaluation/LABELLING_GUIDE.md](../evaluation/LABELLING_GUIDE.md).
 
 ## Results so far
 

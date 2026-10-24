@@ -1,6 +1,7 @@
 """Fetch article pages and extract main text with trafilatura.
 
-GDELT only returns metadata, so bodies are fetched from the publisher. Failures
+Feeds carry only a headline and a short summary, so bodies are fetched from the
+publisher. Failures
 are expected (paywalls, bot blocks, timeouts); those articles keep title-only text.
 Extracted text is cached per URL so re-runs don't refetch.
 """

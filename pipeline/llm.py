@@ -1,13 +1,10 @@
-"""LLM clients for structured (JSON-schema) generation.
+"""LLM client for structured (JSON-schema) generation.
 
-Two interchangeable providers:
-- GroqClient: Groq's hosted API (default). Fast, but the free tier allows only
-  ~8K tokens per minute, so rate-limit replies are waited out and retried.
-- OllamaClient: a self-hosted Ollama server (e.g. on a VM reached through an
-  SSH tunnel). Slow on CPU, no rate limits.
-
-Both expose the same `generate()`. Every response is cached by a hash of the
-full request, so re-running a stage never repeats a call.
+GroqClient talks to Groq's hosted API. It is fast, but the free tier allows only
+~8K tokens per minute, so rate-limit replies are waited out and retried.
+LLMClient holds the provider-independent part: caching, validation and retry.
+Every response is cached by a hash of the full request, so re-running a stage
+never repeats a call.
 """
 
 import hashlib
@@ -98,42 +95,6 @@ class LLMClient:
                 self.cache.put(key, model, content)
             return result
         raise LLMError(f"LLM output invalid after retry: {last_error}")
-
-
-class OllamaClient(LLMClient):
-    provider = "ollama"
-
-    def __init__(self, base_url: str, timeout: float = 600.0, cache: ResponseCache | None = None):
-        super().__init__(timeout, cache)
-        self.base_url = base_url.rstrip("/")
-        self.unavailable_hint = f"Ollama is unreachable at {self.base_url}. Is the server (or SSH tunnel) running?"
-
-    def available(self) -> bool:
-        # A short connect timeout: the tunnel answers instantly when it is up, while
-        # Windows retries a refused local port for ~2 s before reporting failure.
-        try:
-            resp = httpx.get(f"{self.base_url}/api/tags", timeout=httpx.Timeout(5.0, connect=0.5))
-            return resp.status_code == 200
-        except httpx.HTTPError:
-            return False
-
-    def _payload(self, model, system, prompt, output, num_predict, temperature, num_ctx) -> dict:
-        return {
-            "model": model,
-            "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-            "format": output.model_json_schema(),
-            "stream": False,
-            "keep_alive": "15m",
-            "options": {"temperature": temperature, "num_predict": num_predict, "num_ctx": num_ctx},
-        }
-
-    def _send(self, payload: dict) -> str:
-        try:
-            resp = httpx.post(f"{self.base_url}/api/chat", json=payload, timeout=self.timeout)
-        except httpx.ConnectError as exc:
-            raise LLMUnavailable(self.unavailable_hint) from exc
-        resp.raise_for_status()
-        return resp.json()["message"]["content"]
 
 
 class GroqClient(LLMClient):

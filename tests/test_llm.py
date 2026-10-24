@@ -67,8 +67,8 @@ def test_groq_bad_key_is_unavailable(monkeypatch):
 def test_models_default_per_provider():
     groq = Settings(_env_file=None, llm_provider="groq")
     assert (groq.llm_naming_model, groq.llm_brief_model) == ("openai/gpt-oss-120b", "openai/gpt-oss-120b")
-    ollama = Settings(_env_file=None, llm_provider="Ollama", llm_brief_model="custom")
-    assert (ollama.llm_naming_model, ollama.llm_brief_model) == ("qwen2.5:3b-instruct", "custom")
+    custom = Settings(_env_file=None, llm_provider="Groq", llm_brief_model="custom")
+    assert (custom.llm_naming_model, custom.llm_brief_model) == ("openai/gpt-oss-120b", "custom")
     with pytest.raises(ValueError):
         Settings(_env_file=None, llm_provider="openai")
 

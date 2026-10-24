@@ -281,7 +281,7 @@ Example summary (a real run):
 ## Entry 12: Measuring quality (evaluation)
 
 **What we built**
-- A 150-article labelling set (75 English, 75 Hindi) from real runs, with a plain-language [labelling guide](../evaluation/LABELLING_GUIDE.md), plus scripts that score each model against the labels.
+- A 150-article labelling set (75 English, 75 Hindi) from real runs, with a plain-language labelling guide, plus scripts that score each model against the labels. (Later replaced by public benchmarks; the set and guide were removed.)
 
 **What we saw while building it**
 - **91 of 150 article texts started by repeating the headline**, and some headlines contained `&amp;` instead of `&`. Feeds send HTML codes (**HTML entities**) and our cleaner never decoded them. That was fixed in the pipeline, not just in the dataset.

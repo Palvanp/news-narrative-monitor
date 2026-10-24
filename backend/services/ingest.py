@@ -1,4 +1,4 @@
-"""Stage 1: collect coverage (RSS and/or GDELT), fetch bodies, clean, deduplicate (URL/headline), detect language."""
+"""Stage 1: collect coverage from the RSS feeds, fetch bodies, clean, deduplicate (URL/headline), detect language."""
 
 from collections import Counter
 
@@ -12,7 +12,6 @@ from pipeline.cleaning.dedup import dedup_urls, headline_duplicates
 from pipeline.cleaning.text import clean_body, clean_text, is_malformed
 from pipeline.cleaning.urls import normalize_url
 from pipeline.ingestion.bodies import fetch_bodies
-from pipeline.ingestion.gdelt import GdeltClient, collect
 from pipeline.ingestion.rss import collect_rss, load_feeds
 from pipeline.ingestion.topic import build_matcher
 from pipeline.ingestion.types import RawArticle
@@ -21,35 +20,17 @@ from pipeline.language.detect import resolve_language
 MIN_SUMMARY_CHARS = 80
 
 
-def collect_sources(monitor: Monitor, run: MonitoringRun, sources: list[str], report: Reporter) -> tuple[list[RawArticle], dict]:
-    cache = get_settings().data_dir / "cache"
-    raw: list[RawArticle] = []
-    source_stats: dict = {}
-    if "rss" in sources:
-        report("collect", 0.0, "Reading publisher news feeds")
-        items, source_stats["rss"] = collect_rss(
-            load_feeds(monitor.languages),
-            build_matcher(monitor.topic, monitor.hindi_keywords),
-            run.window_start,
-            run.window_end,
-            cache_dir=cache / "rss",
-            on_progress=lambda i, n: report("collect", 0.15 * i / n, f"Read {i}/{n} feeds"),
-        )
-        raw.extend(items)
-    if "gdelt" in sources:
-        report("collect", 0.15, "Querying GDELT")
-        items = collect(
-            GdeltClient(cache_dir=cache / "gdelt"),
-            topic=monitor.topic,
-            languages=monitor.languages,
-            end=run.window_end,
-            hours=monitor.time_range_hours,
-            hindi_keywords=monitor.hindi_keywords,
-            on_progress=lambda i, n, r: report("collect", 0.15 + 0.15 * (i - 1) / n, f"GDELT query {i}/{n} ({r} requests)"),
-        )
-        source_stats["gdelt"] = {"collected": len(items)}
-        raw.extend(items)
-    return raw, source_stats
+def collect_sources(monitor: Monitor, run: MonitoringRun, report: Reporter) -> tuple[list[RawArticle], dict]:
+    report("collect", 0.0, "Reading publisher news feeds")
+    items, rss_stats = collect_rss(
+        load_feeds(monitor.languages),
+        build_matcher(monitor.topic, monitor.hindi_keywords),
+        run.window_start,
+        run.window_end,
+        cache_dir=get_settings().data_dir / "cache" / "rss",
+        on_progress=lambda i, n: report("collect", 0.3 * i / n, f"Read {i}/{n} feeds"),
+    )
+    return items, {"rss": rss_stats}
 
 
 def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Reporter) -> None:
@@ -57,7 +38,7 @@ def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
     cache = settings.data_dir / "cache"
     stats: Counter = Counter()
 
-    raw, source_stats = collect_sources(monitor, run, settings.enabled_sources, report)
+    raw, source_stats = collect_sources(monitor, run, report)
     stats["collected"] = len(raw)
     if not raw:
         raise InsufficientCoverage("No headlines in the news feeds matched this topic in the selected time window")

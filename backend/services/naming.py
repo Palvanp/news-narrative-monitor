@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 from backend.config import get_settings
 from backend.models import ArticleNarrative, LLMCache, Monitor, MonitoringRun, Narrative
 from backend.services.progress import Reporter
-from pipeline.llm import GroqClient, LLMClient, LLMError, LLMUnavailable, OllamaClient
+from pipeline.llm import GroqClient, LLMClient, LLMError, LLMUnavailable
 from pipeline.narratives.naming import Headline, name_narrative
 
 log = logging.getLogger(__name__)
@@ -29,9 +29,7 @@ class DbCache:
 
 def make_client(cache: DbCache | None = None) -> LLMClient:
     settings = get_settings()
-    if settings.llm_provider == "groq":
-        return GroqClient(settings.groq_api_key, settings.groq_url, cache=cache, max_prompt_tokens=settings.groq_max_prompt_tokens)
-    return OllamaClient(settings.ollama_url, timeout=settings.llm_timeout_seconds, cache=cache)
+    return GroqClient(settings.groq_api_key, settings.groq_url, cache=cache, max_prompt_tokens=settings.groq_max_prompt_tokens)
 
 
 def llm_client(session: Session) -> LLMClient:
