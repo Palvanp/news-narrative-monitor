@@ -30,7 +30,7 @@ def setup_logging(level: int = logging.INFO) -> None:
     file = logging.handlers.RotatingFileHandler(log_dir / "nazar.log", maxBytes=5_000_000, backupCount=3, encoding="utf-8")
     file.setFormatter(logging.Formatter("%(asctime)s %(levelname)-7s %(name)-24s %(message)s"))
 
-    for name in ("backend", "pipeline"):
+    for name in ("backend", "pipeline", "evaluation", "redteam"):
         logger = logging.getLogger(name)
         logger.setLevel(level)
         logger.addHandler(console)

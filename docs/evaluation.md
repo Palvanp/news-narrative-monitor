@@ -10,6 +10,7 @@ How Nazar's components are measured, and the results so far. The raw numbers liv
 | Entities | entity-level precision / recall / F1 (exact span + type), per type | public benchmarks: CoNLL-2003 (EN news), Naamapadam (HI news), HiNER (HI, in-domain reference) | ✅ results below |
 | Narrative clustering | silhouette, bilingual share, cohesion, vs a KMeans baseline and an ablation without language centering | a completed run | ✅ results below |
 | Brief | evidence coverage (claims citing real sources); faithfulness via an LLM judge | generated briefs + the LLM | ✅ results below |
+| Safety: prompt injection | survival of hidden instructions through extraction; attack success rate with and without defences; cost on clean pages | 48 generated attack pages + clean twins | ✅ see [redteam.md](redteam.md) |
 
 **Why public benchmarks instead of hand labels.** Labels made by the developer for their own system are slow to make and easy to doubt. Public test sets were labelled by other people, are used in published work, and are reproducible: `run_eval` downloads them on first use (into `data/benchmarks/`). The cost is **domain shift**: none of them is political news from Indian outlets, so each one stands in for part of our setting, as described per result below.
 

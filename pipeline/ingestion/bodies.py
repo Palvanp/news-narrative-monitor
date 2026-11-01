@@ -4,6 +4,9 @@ Feeds carry only a headline and a short summary, so bodies are fetched from the
 publisher. Failures
 are expected (paywalls, bot blocks, timeouts); those articles keep title-only text.
 Extracted text is cached per URL so re-runs don't refetch.
+
+Optional prompt-injection defences (pipeline/safety/defences.py) run here: hidden
+HTML is stripped before extraction, Unicode and instruction filters after it.
 """
 
 import asyncio
@@ -17,27 +20,36 @@ import trafilatura
 
 from pipeline.ingestion.rss import USER_AGENT
 from pipeline.ingestion.types import RawArticle
+from pipeline.safety.defences import apply_text_defences, strip_hidden_html
 
 log = logging.getLogger(__name__)
 
 MIN_BODY_CHARS = 200
 
 
-def _cache_file(cache_dir: Path | None, url: str) -> Path | None:
+def _cache_file(cache_dir: Path | None, url: str, defences: frozenset[str] = frozenset()) -> Path | None:
     if not cache_dir:
         return None
-    return cache_dir / f"{hashlib.sha1(url.encode()).hexdigest()}.txt"
+    # Text extracted with defences on differs from text without them.
+    key = url if not defences else f"{url}#{','.join(sorted(defences))}"
+    return cache_dir / f"{hashlib.sha1(key.encode()).hexdigest()}.txt"
 
 
-def extract_text(html: str) -> str | None:
+def extract_text(html: str, defences: frozenset[str] = frozenset()) -> str | None:
+    if "html" in defences:
+        html = strip_hidden_html(html)
     text = trafilatura.extract(html, include_comments=False, include_tables=False, favor_precision=True)
+    if text:
+        text = apply_text_defences(text, defences)
     if text and len(text) >= MIN_BODY_CHARS:
         return text
     return None
 
 
-async def _fetch_one(client: httpx.AsyncClient, sem: asyncio.Semaphore, article: RawArticle, cache_dir: Path | None) -> None:
-    cache = _cache_file(cache_dir, article.url)
+async def _fetch_one(
+    client: httpx.AsyncClient, sem: asyncio.Semaphore, article: RawArticle, cache_dir: Path | None, defences: frozenset[str]
+) -> None:
+    cache = _cache_file(cache_dir, article.url, defences)
     if cache and cache.exists():
         text = cache.read_text(encoding="utf-8")
         article.body, article.body_status = (text or None), ("ok" if text else "failed")
@@ -47,7 +59,7 @@ async def _fetch_one(client: httpx.AsyncClient, sem: asyncio.Semaphore, article:
         try:
             resp = await client.get(article.url)
             resp.raise_for_status()
-            text = await asyncio.to_thread(extract_text, resp.text)
+            text = await asyncio.to_thread(extract_text, resp.text, defences)
         except Exception as exc:  # network errors, 4xx/5xx, bad encodings
             log.debug("body fetch failed for %s: %s", article.url, exc)
             text = None
@@ -65,10 +77,11 @@ async def fetch_bodies_async(
     concurrency: int = 10,
     timeout: float = 10.0,
     on_progress: Callable[[int, int], None] | None = None,
+    defences: frozenset[str] = frozenset(),
 ) -> None:
     sem = asyncio.Semaphore(concurrency)
     async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, headers={"User-Agent": USER_AGENT}) as client:
-        tasks = [asyncio.create_task(_fetch_one(client, sem, a, cache_dir)) for a in articles]
+        tasks = [asyncio.create_task(_fetch_one(client, sem, a, cache_dir, defences)) for a in articles]
         for done, task in enumerate(asyncio.as_completed(tasks), 1):
             await task
             if on_progress and (done % 20 == 0 or done == len(tasks)):

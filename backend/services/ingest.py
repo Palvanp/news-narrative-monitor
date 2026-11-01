@@ -16,6 +16,7 @@ from pipeline.ingestion.rss import collect_rss, load_feeds
 from pipeline.ingestion.topic import build_matcher
 from pipeline.ingestion.types import RawArticle
 from pipeline.language.detect import resolve_language
+from pipeline.safety.defences import parse_defences
 
 MIN_SUMMARY_CHARS = 80
 
@@ -48,6 +49,7 @@ def ingest(session: Session, run: MonitoringRun, monitor: Monitor, report: Repor
     fetch_bodies(
         articles,
         cache_dir=cache / "bodies",
+        defences=parse_defences(settings.injection_defences),
         on_progress=lambda i, n: report("fetch_bodies", 0.3 + 0.5 * i / n, f"Fetched {i}/{n} pages"),
     )
 

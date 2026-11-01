@@ -4,6 +4,8 @@ from pathlib import Path
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from pipeline.safety.defences import parse_defences
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Default (naming, brief) models per LLM provider; LLM_NAMING_MODEL / LLM_BRIEF_MODEL override.
@@ -47,6 +49,11 @@ class Settings(BaseSettings):
     # topic phrase is blunt (see docs/JOURNAL.md). Narrative cohesion does most of the work.
     relevance_min: float = 0.33
 
+    # Prompt-injection defences applied to fetched article pages: any of
+    # "html,unicode,filter", "all", or empty for none. See pipeline/safety/defences.py
+    # and docs/redteam.md for what each blocks and costs.
+    injection_defences: str = ""
+
     data_dir: Path = PROJECT_ROOT / "data"
 
     @model_validator(mode="after")
@@ -57,6 +64,7 @@ class Settings(BaseSettings):
         naming, brief = DEFAULT_LLM_MODELS[self.llm_provider]
         self.llm_naming_model = self.llm_naming_model or naming
         self.llm_brief_model = self.llm_brief_model or brief
+        parse_defences(self.injection_defences)  # fail at startup on a typo
         return self
 
     @property
